@@ -52,5 +52,20 @@ PROJECTS = [
     },
 ]
 
+# G02: Open Budgets India's normalised state indicators, from the copy in CBGA's GitHub repo (openbudgetsindia.org is gone)
+OBI_SOURCE = "https://raw.githubusercontent.com/cbgaindia/story-generator/972ac485e67afe95ec7ab0bf67222cdc27c4f9de/src/data"
+PROJECTS.append({
+    "name": f"{FAMILY}-obi-states",
+    "title": "State budget indicators (Open Budgets India, 26 states, 2012-13 to 2017-18)",
+    "task": "obi",
+    "target": "raw.githubusercontent.com",
+    "env": {"OBI_SOURCE": OBI_SOURCE},
+    "probe": f"{FAMILY}:obi-source",
+    "unit_label": "dataset", "record_label": "value",
+    "items": [{"key": d, "payload": {"dataset": d, "data_url": f"{OBI_SOURCE}/{d}_data.js", "meta_url": f"{OBI_SOURCE}/{d}_metadata.js",
+                                     "expected": n}} for d, n in (("expenditure", 14239), ("receipts", 2736))],
+})
+
 # health checks the hub runs every minute; work for a project holds while its probe fails (it fails while Akamai refuses us)
-PROBES = [{"name": f"{FAMILY}:indiabudget.gov.in", "url": f"{SITE}/", "expect": "Union Budget"}]
+PROBES = [{"name": f"{FAMILY}:indiabudget.gov.in", "url": f"{SITE}/", "expect": "Union Budget"},
+          {"name": f"{FAMILY}:obi-source", "url": f"{OBI_SOURCE}/receipts_metadata.js", "expect": "receipts_metadata"}]

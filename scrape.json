@@ -1,6 +1,6 @@
 {
   "family": "budget",
-  "about": "G01: Union Budget documents (expenditure budget, demands for grants, outcome budgets, speeches) from www.indiabudget.gov.in.",
+  "about": "Indian budgets. G01: Union Budget documents from www.indiabudget.gov.in. G02: state budget indicators normalised by Open Budgets India.",
   "setup": [
     "pip install -r requirements.txt"
   ],
@@ -8,6 +8,10 @@
     "crawl": [
       "python",
       "crawl.py"
+    ],
+    "obi": [
+      "python",
+      "obi.py"
     ]
   }
 }
