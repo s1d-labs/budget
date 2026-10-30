@@ -1,36 +1,59 @@
-"""The family's `crawl` task (see scrape.json). Try it without the hub: python crawl.py --local [url] The pool worker runs it with the assignment's env and:
+"""The family's `crawl` task (see scrape.json): Union Budget documents from www.indiabudget.gov.in.
+Try it without the hub: python crawl.py --local <url>. The pool worker runs it with the assignment's env and:
 SCRAPE_POOL_PROJECT (which project), SCRAPE_JOB_INDEX / SCRAPE_TOTAL_JOBS (this worker's slice), SCRAPE_MAX_HOURS (time budget).
 
-It claims queue items from the hub, fetches each page politely (threads and delay come from the hub on every call), keeps the
-raw page in the family's bucket (the hub signs the upload; this code never holds a storage key), stores one record per book,
-and reports the standard counters (n_http, t_http_s, http_error, http_<code>) the hub uses for politeness and tracking.
+Two kinds of queue item (family.py):
+- `pdf`: download one budget document, keep it in the family's bucket (signed by the hub), store one record describing it;
+- `index`: fetch an HTML page and store one record per document (PDF/XLS) linked from it, so the full archive can be mapped.
+
+The site sits behind Akamai, which answers 403 to this self-identified client (reportG01.md). Those answers are counted as
+blocks (http_403, hub.block()), so the hub backs off, and the items fail and are retried later.
 """
 import gzip
+import hashlib
 import html
 import json
 import os
 import re
 import sys
 import time
+from urllib.parse import urljoin, urlsplit
 
 import requests
 
 PROJECT = os.environ.get("SCRAPE_POOL_PROJECT", "")
-SITE = os.environ.get("SITE", "https://books.toscrape.com")
+SITE = os.environ.get("SITE", "https://www.indiabudget.gov.in")
 DEADLINE = time.time() + float(os.environ.get("SCRAPE_MAX_HOURS", "1")) * 3600 - 120
 UA = "s1d-labs scraper (https://github.com/s1d-labs)"
-BOOK = re.compile(r'<article class="product_pod">.*?<a href="([^"]+)" title="([^"]+)".*?<p class="price_color">([^<]+)</p>.*?'
-                  r'<p class="instock availability">\s*(?:<i[^>]*></i>)?\s*([^<]+?)\s*</p>', re.S)
+LINK = re.compile(r'<a\b[^>]*?href\s*=\s*["\']([^"\']+)["\'][^>]*>(.*?)</a>', re.S | re.I)
+DOC_EXT = (".pdf", ".xls", ".xlsx", ".csv", ".zip")
+YEAR = re.compile(r"(?:budget|ub|es)(\d{4})-(\d{2,4})")
 
 
-def parse(page):
-    """[(record_id, data)] for the books on one catalogue page. Pure: test it on saved pages."""
-    out = []
-    for href, title, price, stock in BOOK.findall(page):
-        slug = href.rsplit("/", 2)[-2]
-        out.append((slug, {"title": html.unescape(title), "price": price.strip(), "availability": stock.strip(),
-                           "url": SITE + "/catalogue/" + href.lstrip("./")}))
+def parse(page, base_url):
+    """[(record_id, data)] for the documents linked from one HTML page. Pure: test it on saved pages."""
+    out, seen = [], set()
+    for href, text in LINK.findall(page):
+        url = urljoin(base_url, html.unescape(href.strip()))
+        parts = urlsplit(url)
+        if not parts.netloc.endswith("indiabudget.gov.in") or not parts.path.lower().endswith(DOC_EXT):
+            continue
+        rid = parts.path.lstrip("/")                  # the site's own path: stable across runs and years
+        if rid in seen:
+            continue
+        seen.add(rid)
+        title = " ".join(html.unescape(re.sub(r"<[^>]+>", " ", text)).split())
+        m = YEAR.search(parts.path)
+        out.append((rid, {"url": url, "title": title, "year": f"{m[1]}-{m[2][-2:]}" if m else None,
+                          "format": parts.path.rsplit(".", 1)[-1].lower(), "listed_on": base_url}))
     return out
+
+
+def describe_pdf(body, payload):
+    """(record_id, data) for one downloaded document. Pure."""
+    rid = urlsplit(payload["url"]).path.lstrip("/")
+    return rid, {"url": payload["url"], "year": payload.get("year"), "doc": payload.get("doc"), "bytes": len(body),
+                 "sha256": hashlib.sha256(body).hexdigest(), "pdf": body[:5] == b"%PDF-"}
 
 
 class LocalHub:
@@ -50,19 +73,11 @@ class LocalHub:
         self.metric("blocked", n)
 
 
-def local(url):
-    hub = LocalHub()
-    page = fetch(hub, requests.Session(), url)
-    rows = parse(page) if page else []
-    for rid, data in rows:
-        print(json.dumps({"record_id": rid, "data": data}, ensure_ascii=False))
-    print(f"{len(rows)} records, counters {hub.counts}", file=sys.stderr)
-
-
-def fetch(hub, session, url):
+def fetch(hub, session, url, timeout=30):
+    """The response on 200, the status code (int) otherwise, None on a connection error."""
     t = time.time()
     try:
-        r = session.get(url, timeout=30, headers={"User-Agent": UA})
+        r = session.get(url, timeout=timeout, headers={"User-Agent": UA})
     except requests.RequestException:
         hub.metric("http_error")
         hub.error()
@@ -73,10 +88,47 @@ def fetch(hub, session, url):
         hub.metric(f"http_{r.status_code}")
         if r.status_code in (403, 429, 503):
             hub.block()
-        return None
+        return r.status_code
     if not r.encoding or r.encoding.lower() == "iso-8859-1":     # no charset declared: requests guesses Latin-1; trust the content
         r.encoding = r.apparent_encoding or "utf-8"
-    return r.text
+    return r
+
+
+def local(url):
+    hub = LocalHub()
+    r = fetch(hub, requests.Session(), url, timeout=180)
+    rows = []
+    if isinstance(r, requests.Response):
+        rows = [describe_pdf(r.content, {"url": url})] if r.content[:5] == b"%PDF-" else parse(r.text, url)
+    else:
+        print(f"no page: {r}", file=sys.stderr)
+    for rid, data in rows:
+        print(json.dumps({"record_id": rid, "data": data}, ensure_ascii=False))
+    print(f"{len(rows)} records, counters {hub.counts}", file=sys.stderr)
+
+
+def work(hub, session, item):
+    """Fetch one queue item and store what it gives. Returns (status, error, records)."""
+    p = item["payload"]
+    r = fetch(hub, session, p["url"], timeout=(15, 300) if p["kind"] == "pdf" else 30)
+    if r == 404:
+        hub.failure("not_found", item["key"], "404", url=p["url"])     # e.g. a demand number that year does not have
+        return "done", None, 0
+    if not isinstance(r, requests.Response):
+        return "failed", f"http {r}" if r else "connection error", 0
+    if p["kind"] == "index":
+        hub.upload_many([(f"pages/{item['key']}.html.gz", gzip.compress(r.content), "application/gzip")])
+        rows = parse(r.text, p["url"])
+    else:
+        if r.content[:5] != b"%PDF-":                                  # an HTML error page served with 200
+            hub.metric("not_pdf")
+            return "failed", "not a PDF", 0
+        stored = hub.upload_many([(f"docs/{item['key']}.pdf", r.content, "application/pdf")])
+        rid, data = describe_pdf(r.content, p)
+        rows = [(rid, {**data, "file": stored[0]["key"]})]
+    for rid, data in rows:
+        hub.record(rid, data)
+    return "done", None, len(rows)
 
 
 def main():
@@ -92,16 +144,9 @@ def main():
             if not items:
                 break                                   # nothing left for this project: exit, the worker asks the hub for more
             item = items[0]
-            page = fetch(hub, session, item["payload"]["url"])
-            if page is None:
-                hub.complete([item["key"]], "failed", error="page did not load")
-                continue
-            hub.upload_many([(f"pages/{item['key']}.html.gz", gzip.compress(page.encode()), "application/gzip")])
-            rows = parse(page)
-            for rid, data in rows:
-                hub.record(rid, {**data, "page": item["key"]})
-            hub.complete([item["key"]], "done", fetched=len(rows))
-            time.sleep(max(0.5, hub.settings.get("delay_ms", 0) / 1000))
+            status, error, n = work(hub, session, item)
+            hub.complete([item["key"]], status, error=error, fetched=n)
+            time.sleep(max(1.0, hub.settings.get("delay_ms", 0) / 1000))
         hub.close()
     except BaseException as e:
         hub.close("failed", f"{type(e).__name__}: {e}"[:200])
@@ -110,6 +155,6 @@ def main():
 
 if __name__ == "__main__":
     if sys.argv[1:2] == ["--local"]:
-        local(sys.argv[2] if len(sys.argv) > 2 else SITE + "/catalogue/page-1.html")
+        local(sys.argv[2] if len(sys.argv) > 2 else SITE + "/")
     else:
         main()
