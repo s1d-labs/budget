@@ -28,7 +28,7 @@ jobs:
       - name: scrape-check budget-obi-states (local stand-in hub, both real items)
         run: rc=0; scrape-check --project budget-obi-states --items 2 || rc=$?; mv .scrape-check .scrape-check-obi-states; exit $rc
       # G01 (budget-union-docs) is parked and not tested: www.indiabudget.gov.in answers 403 to this scraper.
-      # G03 (budget-pfms) is covered by the parsing tests only: pfms.nic.in answers only from India (it runs on the India pool servers).
+      # G03 (budget-pfms) is covered by the parsing tests only: pfms.gov.in answers only from India (it runs on the India pool servers).
       # informational: web.archive.org's CDX index is slow (~30 s) and often answers 503/502 for a while; the pool retries those
       - name: scrape-check budget-obi-wayback (2 real prefixes from web.archive.org)
         if: ${{ always() }}

@@ -1,6 +1,6 @@
 {
   "family": "budget",
-  "about": "Indian budgets. G02: state budget data normalised by Open Budgets India (CBGA's repo + the Wayback Machine's copy of its catalogue). G03: PFMS public reports (pfms.nic.in, India pool servers). G01 (Union Budget documents, www.indiabudget.gov.in) is parked.",
+  "about": "Indian budgets. G02: state budget data normalised by Open Budgets India (CBGA's repo + the Wayback Machine's copy of its catalogue). G03: PFMS public reports (pfms.gov.in, India pool servers). G01 (Union Budget documents, www.indiabudget.gov.in) is parked.",
   "setup": [
     "pip install -r requirements.txt"
   ],

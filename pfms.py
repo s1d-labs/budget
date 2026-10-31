@@ -1,10 +1,11 @@
-"""The family's `pfms` task (see scrape.json): PFMS public reports, pfms.nic.in (G03): scheme releases, implementing agencies.
+"""The family's `pfms` task (see scrape.json): PFMS public reports (G03): scheme releases, implementing agencies.
 
-pfms.nic.in answers only from India (it times out from the team server and from GitHub runners), so its project runs with geo="IN" on
+PFMS moved from pfms.nic.in to pfms.gov.in (as of 2026-10-31 the old host only says so). Both answer only from India (they
+time out from the team server and from GitHub runners), so the project runs with geo="IN" on
 the hub's India pool servers. The site's report pages are ASP.NET forms, and their layout could not be read beforehand (the Wayback
 Machine rate-limits the team IP), so the first stage is **exploration**:
 
-- `explore` item: a breadth-first walk of pfms.nic.in from the item's seed pages (same site only, bounded by depth and page count,
+- `explore` item: a breadth-first walk of the PFMS site from the item's seed pages (same site only, bounded by depth and page count,
   >= 2 s between requests). For every page it keeps the HTML (gzipped) in the family's bucket and stores a `page/<path>` record:
   title, visible text (start), links, ASP.NET postback targets, and each form's fields with the options of every dropdown (scheme,
   ministry, state, financial year, ...). Those records say which reports are public and what their forms ask for, so the report
@@ -28,7 +29,7 @@ import requests
 from crawl import LocalHub, fetch
 
 PROJECT = os.environ.get("SCRAPE_POOL_PROJECT", "")
-SITE = os.environ.get("SITE", "https://pfms.nic.in")
+SITE = os.environ.get("SITE", "https://pfms.gov.in")
 DEADLINE = time.time() + float(os.environ.get("SCRAPE_MAX_HOURS", "1")) * 3600 - 300
 GAP_S = 2.0
 HOSTS = ("pfms.nic.in", "pfms.gov.in")

@@ -84,21 +84,25 @@ OBI_WAYBACK = {
     "items": [{"key": a + b, "payload": {"prefix": f"openbudgetsindia.org/dataset/{a}{b}"}} for a in ALNUM for b in ALNUM],
 }
 
-# G03: PFMS public reports (pfms.nic.in): scheme releases, implementing agencies. The site answers only from India, so geo="IN"
+# G03: PFMS public reports: scheme releases, implementing agencies. PFMS moved from pfms.nic.in to pfms.gov.in (the old host now
+# answers every path with "This site is now available on new URL https://pfms.gov.in"). Both answer only from India, so geo="IN"
 # (India pool servers only). Stage 1 explores the site from India (pfms.py) to learn which reports are public and what their forms
 # take; report items follow from what it finds. No probe yet: a probe checked from outside India would hold the work for good.
-PFMS_SITE = "https://pfms.nic.in"
+PFMS_SITE = "https://pfms.gov.in"
 PFMS = {
     "name": f"{FAMILY}-pfms",
-    "title": "PFMS public reports (pfms.nic.in): scheme releases, implementing agencies",
+    "title": "PFMS public reports (pfms.gov.in): scheme releases, implementing agencies",
     "task": "pfms",
-    "target": "pfms.nic.in",
+    "target": "pfms.gov.in",
     "env": {"SITE": PFMS_SITE},
     "geo": "IN",
     "max_workers": 2,
     "unit_label": "item", "record_label": "page",
-    "items": [{"key": "explore/home", "payload": {"kind": "explore", "seeds": [f"{PFMS_SITE}/", f"{PFMS_SITE}/NewDefaultHome.aspx"],
-                                                  "max_pages": 200, "max_depth": 3, "expected": 200}}],
+    # explore/home (done) walked the old pfms.nic.in, which only says it moved; explore/gov walks the new site
+    "items": [{"key": "explore/home", "payload": {"kind": "explore", "seeds": ["https://pfms.nic.in/", "https://pfms.nic.in/NewDefaultHome.aspx"],
+                                                  "max_pages": 200, "max_depth": 3, "expected": 2}},
+              {"key": "explore/gov", "payload": {"kind": "explore", "seeds": [f"{PFMS_SITE}/", "https://www.pfms.gov.in/"],
+                                                 "max_pages": 250, "max_depth": 3, "expected": 250}}],
 }
 
 PROJECTS = [OBI_STATES, OBI_WAYBACK, PFMS]
