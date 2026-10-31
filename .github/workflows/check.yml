@@ -28,8 +28,10 @@ jobs:
       - name: scrape-check budget-obi-states (local stand-in hub, both real items)
         run: rc=0; scrape-check --project budget-obi-states --items 2 || rc=$?; mv .scrape-check .scrape-check-obi-states; exit $rc
       # G01 (budget-union-docs) is parked and not tested: www.indiabudget.gov.in answers 403 to this scraper.
+      # informational: web.archive.org's CDX index is slow (~30 s) and often answers 503/502 for a while; the pool retries those
       - name: scrape-check budget-obi-wayback (2 real prefixes from web.archive.org)
         if: ${{ always() }}
+        continue-on-error: true
         run: rc=0; scrape-check --project budget-obi-wayback --items 2 --no-rerun --timeout 900 || rc=$?; mv .scrape-check .scrape-check-obi-wayback; exit $rc
       - uses: actions/upload-artifact@v4
         if: ${{ always() }}
@@ -39,3 +41,4 @@ jobs:
             .scrape-check-obi-states/
             .scrape-check-obi-wayback/
           if-no-files-found: ignore
+          include-hidden-files: true
