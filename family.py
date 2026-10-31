@@ -111,6 +111,20 @@ PFMS_ROUND2 = [
         f"{PFMS_SITE}/SitePages/js/LoginAndPassword.js", f"{PFMS_SITE}/SitePages/js/CommonFunction.js",
         f"{PFMS_SITE}/SitePages/SchemeDetail.aspx?sid=C8pUwxhQN2Y=&gbid=Y2DIa99jn48="]}},
 ]
+# round 3: whole-state / whole-type agency searches timed out after 60 s from India; try narrow ones with a long timeout.
+# pfmsdashboard.gov.in did not connect from India over https at the bare host; try www. and http.
+PFMS_ROUND3 = [
+    {"key": "explore/dashboard-www", "payload": {"kind": "explore", "seeds": ["https://www.pfmsdashboard.gov.in/",
+                                                                             "http://pfmsdashboard.gov.in/"],
+                                                 "max_pages": 120, "max_depth": 2, "expected": 120}},
+    {"key": "steps/agencies-bihar-local-approved", "payload": {"kind": "steps", "url": _AGENCY, "expected": 2, "steps": [
+        {"fields": {_P + "ddlState": "5", _P + "ddlType": "4/04", _P + "ddlStatus": "43"}, "button": _P + "btnSearch",
+         "timeout": 240}]}},
+    {"key": "steps/agencies-goa-ngo", "payload": {"kind": "steps", "url": _AGENCY, "expected": 2, "steps": [
+        {"fields": {_P + "ddlState": "10", _P + "ddlType": "7/07"}, "button": _P + "btnSearch", "timeout": 240}]}},
+    {"key": "steps/agencies-name-university", "payload": {"kind": "steps", "url": _AGENCY, "expected": 2, "steps": [
+        {"fields": {_P + "txtName": "UNIVERSITY", _P + "ddlState": "10"}, "button": _P + "btnSearch", "timeout": 240}]}},
+]
 PFMS = {
     "name": f"{FAMILY}-pfms",
     "title": "PFMS public reports (pfms.gov.in): scheme releases, implementing agencies",
@@ -125,7 +139,7 @@ PFMS = {
                                                   "max_pages": 200, "max_depth": 3, "expected": 2}},
               {"key": "explore/gov", "payload": {"kind": "explore", "seeds": [f"{PFMS_SITE}/", "https://www.pfms.gov.in/"],
                                                  "max_pages": 250, "max_depth": 3, "expected": 250}}]
-             + PFMS_ROUND2,
+             + PFMS_ROUND2 + PFMS_ROUND3,
 }
 
 PROJECTS = [OBI_STATES, OBI_WAYBACK, PFMS]

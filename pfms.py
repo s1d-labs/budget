@@ -243,7 +243,7 @@ def steps(hub, session, item, store):
             time.sleep(max(GAP_S, hub.settings.get("delay_ms", 0) / 1000))
             action, state = form_state(r.text)
             target = urljoin(r.url, action or r.url)
-            r = post(hub, session, target, step_data(state, step), referer=r.url)
+            r = post(hub, session, target, step_data(state, step), referer=r.url, timeout=step.get("timeout", 60))
         if not isinstance(r, requests.Response):
             hub.failure("step", f"{key}/{n}", f"http {r}" if r else "connection error", url=url, step=step)
             return stored, 1
