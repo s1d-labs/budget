@@ -29,9 +29,9 @@ def test_describe_pdf():
 
 
 def test_queue_urls_follow_the_site_layout():
-    items = {i["key"]: i["payload"]["url"] for i in family.PROJECTS[0]["items"]}
+    items = {i["key"]: i["payload"]["url"] for i in family.UNION_DOCS["items"]}
     assert items["2026-27/outcome_budget"] == "https://www.indiabudget.gov.in/doc/OutcomeBudgetE2026_2027.pdf"
     assert items["2024-25/outcome_budget"] == "https://www.indiabudget.gov.in/budget2024-25/doc/OutcomeBudgetE2024_2025.pdf"
     assert items["2025-26/expenditure_budget"] == "https://www.indiabudget.gov.in/budget2025-26/doc/eb/allsbe.pdf"
-    assert len(items) == len(family.PROJECTS[0]["items"])             # keys unique
+    assert len(items) == len(family.UNION_DOCS["items"])             # keys unique
     assert all(len(k) <= 200 for k in items)

@@ -1,6 +1,6 @@
 {
   "family": "budget",
-  "about": "Indian budgets. G01: Union Budget documents from www.indiabudget.gov.in. G02: state budget indicators normalised by Open Budgets India.",
+  "about": "Indian budgets. G02: state budget data normalised by Open Budgets India (CBGA's repo + the Wayback Machine's copy of its catalogue). G01 (Union Budget documents, www.indiabudget.gov.in) is parked.",
   "setup": [
     "pip install -r requirements.txt"
   ],
@@ -12,6 +12,10 @@
     "obi": [
       "python",
       "obi.py"
+    ],
+    "wayback": [
+      "python",
+      "wayback.py"
     ]
   }
 }

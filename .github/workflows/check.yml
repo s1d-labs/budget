@@ -1,7 +1,7 @@
 name: check
 
 # Verifies this family on every push: parsing tests on saved pages (pytest), then scrape-check, which runs setup_family.py and the
-# crawl task against a local stand-in for scrape-hub, the same way the pool runner does, on 2 real queue items (and a rerun).
+# G02 tasks against a local stand-in for scrape-hub, the same way the pool runner does, on 2 real queue items each.
 # Nothing reaches the real hub. Run it by hand too: Actions -> check -> Run workflow.
 on:
   push:
@@ -25,11 +25,17 @@ jobs:
           python3 -c "import json; [print(c) for c in json.load(open('scrape.json')).get('setup', [])]" | grep -v "requirements.txt" | while IFS= read -r cmd; do bash -c "$cmd"; done
       - name: Parsing tests
         run: python -m pytest tests -q
-      - name: scrape-check (local stand-in hub, 2 real items)
-        run: scrape-check --items 2
+      - name: scrape-check budget-obi-states (local stand-in hub, both real items)
+        run: rc=0; scrape-check --project budget-obi-states --items 2 || rc=$?; mv .scrape-check .scrape-check-obi-states; exit $rc
+      # G01 (budget-union-docs) is parked and not tested: www.indiabudget.gov.in answers 403 to this scraper.
+      - name: scrape-check budget-obi-wayback (2 real prefixes from web.archive.org)
+        if: ${{ always() }}
+        run: rc=0; scrape-check --project budget-obi-wayback --items 2 --no-rerun --timeout 900 || rc=$?; mv .scrape-check .scrape-check-obi-wayback; exit $rc
       - uses: actions/upload-artifact@v4
         if: ${{ always() }}
         with:
           name: scrape-check
-          path: .scrape-check/
+          path: |
+            .scrape-check-obi-states/
+            .scrape-check-obi-wayback/
           if-no-files-found: ignore
