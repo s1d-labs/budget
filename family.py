@@ -89,6 +89,28 @@ OBI_WAYBACK = {
 # (India pool servers only). Stage 1 explores the site from India (pfms.py) to learn which reports are public and what their forms
 # take; report items follow from what it finds. No probe yet: a probe checked from outside India would hold the work for good.
 PFMS_SITE = "https://pfms.gov.in"
+_LIST, _GRID = f"{PFMS_SITE}/SitePages/SchemeListing.aspx", "ctl00$cphBody$grdvSearchSchemeGBE"
+_AGENCY, _P = f"{PFMS_SITE}/SitePages/SearchAgency.aspx", "ctl00$cphBody$"
+# round 2 (from explore/gov): the public scheme list is a paged ASP.NET grid (name [code], grant, plan outlay) per financial year;
+# the agency search takes scheme/state/district/type/status. `steps` items post those forms back the way a browser does.
+PFMS_ROUND2 = [
+    {"key": "explore/dashboard", "payload": {"kind": "explore", "seeds": ["https://pfmsdashboard.gov.in/"], "max_pages": 120,
+                                             "max_depth": 2, "expected": 120}},
+    {"key": "steps/schemes-2025-26", "payload": {"kind": "steps", "url": _LIST, "expected": 4, "steps": [
+        {"fields": {_P + "ddlFinancialYear": "2026"}, "button": _P + "btnSearch"},
+        {"target": _GRID, "arg": "Page$2"}, {"target": _GRID, "arg": "Page$Last"}]}},
+    {"key": "steps/schemes-css-2026-27", "payload": {"kind": "steps", "url": _LIST, "expected": 2, "steps": [
+        {"fields": {_P + "ddlSchemeType": "1"}, "button": _P + "btnSearch"}]}},
+    {"key": "steps/agencies-bihar", "payload": {"kind": "steps", "url": _AGENCY, "expected": 3, "steps": [
+        {"fields": {_P + "ddlState": "5"}, "button": _P + "btnSearch"}, {"target": _P + "gvAgency", "arg": "Page$2"}]}},
+    {"key": "steps/agencies-central-govt", "payload": {"kind": "steps", "url": _AGENCY, "expected": 2, "steps": [
+        {"fields": {_P + "ddlType": "5/05", _P + "ddlStatus": "43"}, "button": _P + "btnSearch"}]}},
+    {"key": "raw/lookups", "payload": {"kind": "raw", "expected": 5, "urls": [
+        f"{PFMS_SITE}/Agency/GetAllScheme.aspx?query=PM&c=ctl00_cphBody_ucSchemes_txtBxScheme&access=yes",
+        f"{PFMS_SITE}/Agency/GetAllScheme.aspx?query=9179&c=ctl00_cphBody_ucSchemes_txtBxScheme&access=yes",
+        f"{PFMS_SITE}/SitePages/js/LoginAndPassword.js", f"{PFMS_SITE}/SitePages/js/CommonFunction.js",
+        f"{PFMS_SITE}/SitePages/SchemeDetail.aspx?sid=C8pUwxhQN2Y=&gbid=Y2DIa99jn48="]}},
+]
 PFMS = {
     "name": f"{FAMILY}-pfms",
     "title": "PFMS public reports (pfms.gov.in): scheme releases, implementing agencies",
@@ -102,7 +124,8 @@ PFMS = {
     "items": [{"key": "explore/home", "payload": {"kind": "explore", "seeds": ["https://pfms.nic.in/", "https://pfms.nic.in/NewDefaultHome.aspx"],
                                                   "max_pages": 200, "max_depth": 3, "expected": 2}},
               {"key": "explore/gov", "payload": {"kind": "explore", "seeds": [f"{PFMS_SITE}/", "https://www.pfms.gov.in/"],
-                                                 "max_pages": 250, "max_depth": 3, "expected": 250}}],
+                                                 "max_pages": 250, "max_depth": 3, "expected": 250}}]
+             + PFMS_ROUND2,
 }
 
 PROJECTS = [OBI_STATES, OBI_WAYBACK, PFMS]
