@@ -1,4 +1,5 @@
-"""What this family scrapes: Indian budget data. Active: G02 (state budgets, Open Budgets India). Parked: G01 (Union Budget documents).
+"""What this family scrapes: Indian budget data. Active: G02 (state budgets, Open Budgets India), G03 (PFMS public reports, exploring).
+Parked: G01 (Union Budget documents).
 
 FAMILY must equal the repo name (s1d-labs/<FAMILY>) and the family the hub owner added on scrape.s1d.me/runners.
 Each project is one queue of work on one site; `target` is the host it hits (the hub caps workers per target).
@@ -83,7 +84,24 @@ OBI_WAYBACK = {
     "items": [{"key": a + b, "payload": {"prefix": f"openbudgetsindia.org/dataset/{a}{b}"}} for a in ALNUM for b in ALNUM],
 }
 
-PROJECTS = [OBI_STATES, OBI_WAYBACK]
+# G03: PFMS public reports (pfms.nic.in): scheme releases, implementing agencies. The site answers only from India, so geo="IN"
+# (India pool servers only). Stage 1 explores the site from India (pfms.py) to learn which reports are public and what their forms
+# take; report items follow from what it finds. No probe yet: a probe checked from outside India would hold the work for good.
+PFMS_SITE = "https://pfms.nic.in"
+PFMS = {
+    "name": f"{FAMILY}-pfms",
+    "title": "PFMS public reports (pfms.nic.in): scheme releases, implementing agencies",
+    "task": "pfms",
+    "target": "pfms.nic.in",
+    "env": {"SITE": PFMS_SITE},
+    "geo": "IN",
+    "max_workers": 2,
+    "unit_label": "item", "record_label": "page",
+    "items": [{"key": "explore/home", "payload": {"kind": "explore", "seeds": [f"{PFMS_SITE}/", f"{PFMS_SITE}/NewDefaultHome.aspx"],
+                                                  "max_pages": 200, "max_depth": 3, "expected": 200}}],
+}
+
+PROJECTS = [OBI_STATES, OBI_WAYBACK, PFMS]
 
 # health checks the hub runs every minute; work for a project holds while its probe fails
 PROBES = [{"name": f"{FAMILY}:obi-source", "url": f"{OBI_SOURCE}/receipts_metadata.js", "expect": "receipts_metadata"}]
