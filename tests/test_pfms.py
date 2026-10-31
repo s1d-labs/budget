@@ -92,7 +92,7 @@ def test_steps_flow_posts_back_from_each_page(monkeypatch):
     posted = []
     monkeypatch.setattr(pfms.requests, "Response", Resp)
     monkeypatch.setattr(pfms, "fetch", lambda hub, s, url, timeout=0: Resp(LISTING, url))
-    monkeypatch.setattr(pfms, "post", lambda hub, s, url, data, referer: posted.append((url, data)) or Resp(LISTING, url))
+    monkeypatch.setattr(pfms, "post", lambda hub, s, url, data, referer, timeout=60: posted.append((url, data)) or Resp(LISTING, url))
     monkeypatch.setattr(pfms, "GAP_S", 0)
     stored = []
     hub = pfms.LocalHub()
