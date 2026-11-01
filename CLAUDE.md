@@ -194,3 +194,48 @@ per thread. `HubClient` is thread-safe for `record`, `metric`, `failure`, `uploa
 - An endless loop on an empty queue, or tight retries of a failing request: exiting and letting the hub retry works better.
 - Fetching what is already stored, when the site's ids allow checking first.
 - Renaming tasks in `scrape.json` without updating the projects' pool entries (`set_pool`).
+
+## India pool servers (`geo`)
+
+Many Indian government sites (most `.gov.in` / `.nic.in`) refuse requests from outside India. GitHub runners are in the US/EU and the
+team boxes are in Germany, so those sites time out or answer 403 there.
+
+- `set_pool(..., geo="IN")` in `setup_family.py` sends that project's work **only** to the hub's pool servers in India (`vpsin`,
+  `vpsin2`: 10 workers on 5 Indian IPs); GitHub runners never get it. Projects without `geo` run only on GitHub runners.
+  `geo=""` moves a project back. Run the **Setup** workflow after changing it. India capacity is small (10 workers against a few
+  hundred GitHub ones), so `geo` suits the sites that need it.
+- On a pool server a task runs the same way as on GitHub: a checkout of this repo at `main` (fetched again every 5 minutes) in its own
+  venv with `scrape-hub-client`, `setup` from `scrape.json` re-run when the commit changes, the same `SCRAPE_*` env vars, and the
+  client signs in with the server's token. No code changes.
+- It runs as an unprivileged user without `sudo`: `playwright install --with-deps chromium` runs without `--with-deps` (Chromium's
+  libraries are already there); other setup steps that need root won't work there. Per worker: 1.5 GB RAM, 1.5 CPU, a restart every
+  6 hours. The servers reach the internet and scrape.s1d.me only.
+- Testing: an India-only site times out from a team box, so parsing is tested offline with saved pages (`tests/pages/` +
+  `tests/test_parse.py`). After Setup, scrape.s1d.me → Runners → *Working now* shows the India servers on the project, and its runs
+  are listed under `server/vpsin` / `server/vpsin2`.
+- Full page: home.s1d.me/docs/15-india-servers (in team boxes: `/usr/local/share/team-docs/15-india-servers.md`).
+
+## Proxies (`proxy="IN"`)
+
+The hub has 10 static proxies in Mumbai (10 Indian IPs). Sites that refuse foreign visitors (most `.gov.in` / `.nic.in`) answer
+through them. They are the first choice for India-only sites: the work runs on the pool's GitHub runners, which have far more
+capacity than the India servers.
+
+- `set_pool(..., proxy="IN")` in `setup_family.py` (then run the **Setup** workflow): GitHub pool workers take that project's work and
+  **each worker borrows one proxy** for its assignment (one worker per IP). With no proxy free the project waits; the hub starts no
+  more runs than there are free proxies. A family borrows at most 4 at once by default (the hub owner changes it per family).
+  `proxy=""` turns it off. `geo="IN"` and `proxy="IN"` together: both the India servers and proxied GitHub workers take the work.
+- The task gets the proxy in `HTTPS_PROXY` / `HTTP_PROXY` (requests, httpx, urllib3, curl, pip use them by themselves) and in
+  `SCRAPE_PROXY` for code that sets a proxy explicitly; `SCRAPE_PROXY_LABEL` / `SCRAPE_PROXY_EXIT` name it. Calls to scrape.s1d.me
+  and GitHub go direct, and the URL is masked in the GitHub log. Playwright takes the login separately:
+  ```python
+  from urllib.parse import urlsplit, unquote
+  u = urlsplit(os.environ["SCRAPE_PROXY"])
+  browser = p.chromium.launch(proxy={"server": f"http://{u.hostname}:{u.port}", "username": unquote(u.username), "password": unquote(u.password)})
+  ```
+- From a team box (in Germany, where India-only sites time out): `myproxy run CMD…` runs one command through a proxy,
+  `myproxy curl URL` tests a site, `eval "$(myproxy env)"` sets the variables in the shell, `myproxy release` gives it back
+  (2 hours by default, one per member). `myproxy run scrape-check --items 2` checks a scraper end to end through an Indian IP.
+- Each proxy IP is one visitor to the site: the hub's speed limits still apply, and 429 / 403 answers slow the project down.
+  scrape.s1d.me → Runners → Proxies shows each proxy's health, who has it and its use.
+- Full page: home.s1d.me/docs/17-proxies (in team boxes: `/usr/local/share/team-docs/17-proxies.md`).
