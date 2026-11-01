@@ -1,8 +1,8 @@
 """The family's `pfms` task (see scrape.json): PFMS public reports (G03): scheme releases, implementing agencies.
 
 PFMS moved from pfms.nic.in to pfms.gov.in (as of 2026-10-31 the old host only says so). Both answer only from India (they
-time out from the team server and from GitHub runners), so the project runs with geo="IN" on
-the hub's India pool servers. The site's report pages are ASP.NET forms, and their layout could not be read beforehand (the Wayback
+time out from the team server and from GitHub runners without a proxy), so the projects run through the hub's Indian
+proxies (proxy="IN"; until 2026-11-01 on the India pool servers, geo="IN"). The site's report pages are ASP.NET forms, and their layout could not be read beforehand (the Wayback
 Machine rate-limits the team IP), so the first stage is **exploration**:
 
 - `explore` item: a breadth-first walk of the PFMS site from the item's seed pages (same site only, bounded by depth and page count,
@@ -15,7 +15,15 @@ Machine rate-limits the team IP), so the first stage is **exploration**:
   page's tables (ASP.NET grids) as rows.
 - `raw` item: fetch URLs as they are (scripts, lookup endpoints) and store `raw/<path>` with the start of the text.
 
-Try it without the hub (from an Indian IP only): python pfms.py --local [url]
+Stage 2 walks the two public lists that stage 1 found, page by page (see "stage 2" below):
+- `schemes` item: one financial year of the Scheme Listing -> `scheme/<fy>/<grant>/<code>` records (outlay, grant); items per
+  (year, scheme type) -> `scheme-type/...` records that tag schemes with their type.
+- `agencies` item: one (state, agency type) of the agency registry, all statuses -> `agency/<hash>` records. Type Individuals is
+  never queued (personal data).
+The project runs on GitHub pool workers through the hub's Indian proxies (proxy="IN"); requests picks up HTTPS_PROXY by itself.
+
+Try it without the hub (from an Indian IP only): myproxy run python pfms.py --local [url]
+or one queue item: myproxy run python pfms.py --item '{"key": "k", "payload": {"kind": "schemes", "fy": "2026", "scheme_type": "1"}}'
 """
 import gzip
 import hashlib
@@ -273,7 +281,169 @@ def raw(hub, session, item, store):
     return stored, failed
 
 
-KINDS = {"explore": explore, "steps": steps, "raw": raw}
+# ---- stage 2: the two public lists, walked page by page ----------------------------------------------------------------------
+# Both are ASP.NET GridViews, 10 rows a page, with a pager row (1 2 ... 10 ... >) as the grid's last row. The grid accepts only the
+# Page$N arguments its pager shows (anything else gives the site's error page), so a list is walked one page at a time, each posted
+# from the page before; the agency grid also accepts Page$Last, which gives its size up front.
+LIST_URL, LIST_GRID = f"{SITE}/SitePages/SchemeListing.aspx", "ctl00$cphBody$grdvSearchSchemeGBE"
+AGENCY_URL, AGENCY_GRID = f"{SITE}/SitePages/SearchAgency.aspx", "ctl00$cphBody$grdvAgencyDetails"
+PAGE_GAP_S = 1.0                                   # between grid pages (the site answers a page in < 1 s)
+PAGE_TRIES = 4                                     # posts of one page before the item fails
+PAGER_CELL = re.compile(r"^(?:\d+|\.\.\.|<|>|<<|>>|First|Last|)$")
+SCHEME = re.compile(r"^(.*?)\s*\[([A-Za-z0-9]+)\]\s*$")       # codes are digits, UT schemes letters too ([DN34])
+GRANT = re.compile(r"^(\d+)\s*-\s*(.*)$")
+
+
+NO_RECORDS = re.compile(r"No records? (?:match|found)", re.I)
+
+
+class ItemFailed(Exception):
+    pass
+
+
+def grid_rows(page, grid):
+    """Data rows of one GridView (`grid` is its postback name, ctl00$...): header and pager rows left out. [] when the page has no
+    such grid (no results). Pure."""
+    tid = grid.replace("$", "_")
+    t = next((t for t in tables(SCRIPT.sub(" ", page), max_rows=1000) if t["id"] == tid), None)
+    if t is None:
+        return []
+    return [r for r in t["rows"] if not all(PAGER_CELL.match(c) for c in r)]
+
+
+def page_problem(page, grid, n):
+    """Why a page that answered 200 is not page n of the result grid, or None when it is. A grid that is missing, empty without
+    the site's "No records" message, or whose pager does not show n as the current page (the site sometimes answers a postback with
+    another page, which would otherwise end the walk early and quietly) is a problem. Pure."""
+    tid = grid.replace("$", "_")
+    t = next((t for t in tables(SCRIPT.sub(" ", page), max_rows=1000) if t["id"] == tid), None)
+    if t is None:
+        return "no result grid"
+    if not grid_rows(page, grid):
+        return None if n == 1 and NO_RECORDS.search(text_of(page)) else "empty grid without the no-records message"
+    if n > 1:
+        pager = next((r for r in reversed(t["rows"]) if r and all(PAGER_CELL.match(c) for c in r)), [])
+        if str(n) not in pager or has_page(page, grid, n):
+            return f"the pager does not show page {n} as current"
+    return None
+
+
+def has_page(page, grid, n):
+    """True when the page's pager links to page n of `grid`. Pure."""
+    return (grid, f"Page${n}") in set(POSTBACK.findall(html.unescape(page)))
+
+
+def fy_label(value):
+    """The financial year dropdown's value is the year the FY ends: '2026' -> '2025-26'. Pure."""
+    y = int(value)
+    return f"{y - 1}-{str(y)[2:]}"
+
+
+def money(text):
+    try:
+        return float(text.replace(",", "").strip())
+    except ValueError:
+        return None
+
+
+def scheme_records(rows, fy, stype, stype_name):
+    """[(record_id, data)] from Scheme Listing rows: name [code] | grant (number - ministry) | plan outlay (₹ crore). Pure.
+    The year's whole list (scheme type "0", All) gives `scheme/<fy>/<grant>/<code>`, one per scheme and year; the lists per scheme
+    type give `scheme-type/<fy>/<type>/<grant>/<code>`, which only say which type a scheme has (many schemes have none)."""
+    out = []
+    for row in rows:
+        if len(row) < 3:
+            continue
+        m, g = SCHEME.match(row[0]), GRANT.match(row[1])
+        code = m[2] if m else hashlib.sha1(row[0].encode()).hexdigest()[:10]
+        grant = g[1] if g else "x"
+        rid = f"scheme/{fy_label(fy)}/{grant}/{code}" if stype == "0" else f"scheme-type/{fy_label(fy)}/{stype}/{grant}/{code}"
+        out.append((rid, {
+            "fy": fy_label(fy), "scheme_code": m[2] if m else None, "scheme": (m[1] if m else row[0]).strip(),
+            **({} if stype == "0" else {"scheme_type": stype, "scheme_type_name": stype_name}),
+            "grant_no": g[1] if g else None, "ministry": (g[2] if g else row[1]).strip(),
+            "outlay_cr": money(row[2]), "outlay_text": row[2]}))
+    return out
+
+
+def agency_records(rows, state_id, type_id):
+    """[(record_id, data)] from Search Agency rows. The site has no public agency id (the unique code is masked, and sometimes shows
+    the end of an e-mail address), so the id is a hash of the whole row; only the code's last digits are kept, when they are
+    digits. Pure."""
+    out = []
+    for row in rows:
+        if len(row) < 9:
+            continue
+        name, atype, code, city, state, status, remark, created_by, date = row[:9]
+        tail = code[-4:] if code[-4:].isdigit() else None
+        rid = "agency/" + hashlib.sha1("|".join([state_id, type_id, *row[:9]]).encode()).hexdigest()[:20]
+        out.append((rid, {"name": name.strip('"').strip(), "agency_type": atype, "code_last4": tail, "city": city, "state": state,
+                          "status": status, "remark": remark, "created_by": created_by, "date": date,
+                          "state_id": state_id, "type_id": type_id}))
+    return out
+
+
+def grid_walk(hub, session, url, fields, grid, first_timeout=240):
+    """GET the page, search with `fields`, then yield (page number, page text) for every page of the result grid. Raises
+    ItemFailed when a page does not load."""
+    r = fetch(hub, session, url, timeout=60)
+    if not isinstance(r, requests.Response):
+        raise ItemFailed(f"form page: http {r}" if r else "form page: connection error")
+    button = "ctl00$cphBody$btnSearch"
+    n, step = 1, {"fields": fields, "button": button, "timeout": first_timeout}
+    while True:
+        prev = r
+        for attempt in range(PAGE_TRIES):          # the site now and then answers a page with an empty grid: post it again
+            if attempt:
+                hub.metric("page_retry")
+            time.sleep(max(PAGE_GAP_S * (1 + 4 * attempt), hub.settings.get("delay_ms", 0) / 1000))
+            action, state = form_state(prev.text)
+            r = post(hub, session, urljoin(prev.url, action or prev.url), step_data(state, step), referer=prev.url,
+                     timeout=step["timeout"])
+            if not isinstance(r, requests.Response):
+                problem = f"http {r}" if r else "connection error or timeout"
+            elif "<title>Error" in r.text[:3000] or "<title>\r\n\tError" in r.text[:3000]:
+                problem = "the site's error page"
+            else:
+                problem = page_problem(r.text, grid, n)
+            if not problem:
+                break
+        if problem:
+            raise ItemFailed(f"page {n}: {problem} ({PAGE_TRIES} tries)")
+        yield n, r.text
+        if not has_page(r.text, grid, n + 1):
+            return
+        if time.time() > DEADLINE:
+            raise ItemFailed(f"out of time after page {n}")
+        n, step = n + 1, {"target": grid, "arg": f"Page${n + 1}", "timeout": 120}
+
+
+def schemes(hub, session, item, store):
+    """One (financial year, scheme type) of the Scheme Listing: every scheme with its grant and plan outlay."""
+    p = item["payload"]
+    fields = {"ctl00$cphBody$ddlFinancialYear": p["fy"], "ctl00$cphBody$ddlSchemeType": p["scheme_type"]}
+    n = 0
+    for page_no, page in grid_walk(hub, session, LIST_URL, fields, LIST_GRID):
+        for rid, data in scheme_records(grid_rows(page, LIST_GRID), p["fy"], p["scheme_type"], p.get("scheme_type_name")):
+            hub.record(rid, {**data, "page": page_no})
+            n += 1
+    return n, None
+
+
+def agencies(hub, session, item, store):
+    """One (state, agency type) of the agency registry, all statuses. Type Individuals is never queued (personal data)."""
+    p = item["payload"]
+    fields = {"ctl00$cphBody$ddlState": p["state"], "ctl00$cphBody$ddlType": p["type"]}
+    n = 0
+    for page_no, page in grid_walk(hub, session, AGENCY_URL, fields, AGENCY_GRID):
+        for rid, data in agency_records(grid_rows(page, AGENCY_GRID), p["state"], p["type"]):
+            hub.record(rid, {**data, "page": page_no})
+            n += 1
+    return n, None
+
+
+KINDS = {"explore": explore, "steps": steps, "raw": raw, "schemes": schemes, "agencies": agencies}
+LISTS = {"schemes", "agencies"}                    # an empty result is a valid answer for these
 
 
 def local(url):
@@ -284,6 +454,20 @@ def local(url):
 
     n, bad = explore(hub, requests.Session(), {"payload": {"seeds": [url], "max_pages": 1, "max_depth": 0}}, show)
     print(f"{n} pages, {bad} failed, counters {hub.counts}", file=sys.stderr)
+
+
+def local_item(item):
+    """Run one queue item without the hub (from an Indian IP: `myproxy run python pfms.py --item '<json>'`); records to stdout."""
+    class Hub(LocalHub):
+        def record(self, rid, data):
+            print(json.dumps({"record_id": rid, "data": data}, ensure_ascii=False))
+
+    hub = Hub()
+    try:
+        n, bad = KINDS[item["payload"]["kind"]](hub, requests.Session(), item, lambda rid, r, info: hub.record(rid, info))
+        print(f"{n} records, counters {hub.counts}", file=sys.stderr)
+    except ItemFailed as e:
+        print(f"failed: {e}, counters {hub.counts}", file=sys.stderr)
 
 
 def main():
@@ -309,8 +493,12 @@ def main():
             if kind is None:
                 hub.complete([item["key"]], "failed", error=f"unknown kind {item['payload'].get('kind')}")
                 continue
-            n, bad = kind(hub, session, item, store)
-            if n:
+            try:
+                n, bad = kind(hub, session, item, store)
+            except ItemFailed as e:
+                hub.complete([item["key"]], "failed", error=str(e)[:200])
+                continue
+            if n or item["payload"]["kind"] in LISTS:
                 hub.complete([item["key"]], "done", fetched=n)
             else:
                 hub.complete([item["key"]], "failed", error=f"no page loaded ({bad} failed)")
@@ -321,7 +509,9 @@ def main():
 
 
 if __name__ == "__main__":
-    if sys.argv[1:2] == ["--local"]:
+    if sys.argv[1:2] == ["--item"]:
+        local_item(json.loads(sys.argv[2]))
+    elif sys.argv[1:2] == ["--local"]:
         local(sys.argv[2] if len(sys.argv) > 2 else SITE + "/")
     else:
         main()

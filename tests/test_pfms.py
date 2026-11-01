@@ -82,7 +82,7 @@ def test_page_ids():
 
 def test_project_runs_in_india():
     p = next(p for p in family.PROJECTS if p["name"] == "budget-pfms")
-    assert p["geo"] == "IN" and p["task"] == "pfms" and "probe" not in p
+    assert p["proxy"] == "IN" and p["geo"] == "" and p["task"] == "pfms" and "probe" not in p
 
 
 def test_steps_flow_posts_back_from_each_page(monkeypatch):
@@ -104,3 +104,77 @@ def test_steps_flow_posts_back_from_each_page(monkeypatch):
     assert posted[0][0] == "https://pfms.gov.in/SitePages/SchemeListing.aspx"
     assert posted[1][1]["__EVENTARGUMENT"] == "Page$2"
     assert stored[1][1]["tables"][0]["n_rows"] == 11
+
+
+# ---- stage 2: real result pages saved through an Indian proxy on 2026-11-01 ----
+# Scheme Listing, 2025-26, Central Sector (type 2): page 1 and page 10 (whose pager runs on to 11 through "...");
+# Search Agency, Goa, Registered Societies (NGOs): page 1 of 5 and page 5.
+SCH1 = (PAGES / "schemes-cs-2025-26-p1.html").read_text(encoding="utf-8")
+SCH10 = (PAGES / "schemes-cs-2025-26-p10.html").read_text(encoding="utf-8")
+AG1 = (PAGES / "agencies-goa-ngo-p1.html").read_text(encoding="utf-8")
+AG5 = (PAGES / "agencies-goa-ngo-p5.html").read_text(encoding="utf-8")
+EMPTY_SCH = (PAGES / "schemes-ut-2014-15-empty.html").read_text(encoding="utf-8")         # 2014-15, type UT: no schemes
+EMPTY_AG = (PAGES / "agencies-lakshadweep-private-academic-empty.html").read_text(encoding="utf-8")
+
+
+def test_grid_rows_drop_header_and_pager():
+    rows = pfms.grid_rows(SCH1, pfms.LIST_GRID)
+    assert len(rows) == 10 and all(len(r) == 3 for r in rows)
+    assert pfms.grid_rows(SCH1, pfms.AGENCY_GRID) == []                     # no such grid on the page: no results
+    assert len(pfms.grid_rows(AG1, pfms.AGENCY_GRID)) == 10
+    assert 1 <= len(pfms.grid_rows(AG5, pfms.AGENCY_GRID)) <= 10
+
+
+def test_pager_goes_on_through_the_ellipsis_and_stops_at_the_end():
+    assert pfms.has_page(SCH1, pfms.LIST_GRID, 2) and not pfms.has_page(SCH1, pfms.LIST_GRID, 12)
+    assert pfms.has_page(SCH10, pfms.LIST_GRID, 11)                         # "..." after 10 posts Page$11
+    assert pfms.has_page(AG1, pfms.AGENCY_GRID, 2)
+    assert not pfms.has_page(AG5, pfms.AGENCY_GRID, 6)                      # last page: the walk ends
+
+
+def test_page_checks_catch_a_wrong_or_empty_page():
+    assert pfms.page_problem(SCH1, pfms.LIST_GRID, 1) is None
+    assert pfms.page_problem(SCH10, pfms.LIST_GRID, 10) is None
+    assert pfms.page_problem(SCH1, pfms.LIST_GRID, 4) == "the pager does not show page 4 as current"   # got page 1 back
+    assert pfms.page_problem(AG5, pfms.AGENCY_GRID, 5) is None
+    assert pfms.page_problem(SCH1, pfms.AGENCY_GRID, 1) == "no result grid"
+    assert pfms.page_problem(EMPTY_SCH, pfms.LIST_GRID, 1) is None and pfms.grid_rows(EMPTY_SCH, pfms.LIST_GRID) == []
+    assert pfms.page_problem(EMPTY_AG, pfms.AGENCY_GRID, 1) is None
+    no_message = EMPTY_AG.replace("No Records Found", "")
+    assert pfms.page_problem(no_message, pfms.AGENCY_GRID, 1) is not None
+
+
+def test_scheme_records():
+    recs = pfms.scheme_records(pfms.grid_rows(SCH1, pfms.LIST_GRID), "2026", "2", "Central Sector Scheme")
+    assert len(recs) == 10 and len({rid for rid, _ in recs}) == 10
+    rid, d = recs[0]
+    assert rid == f"scheme-type/2025-26/2/{d['grant_no']}/{d['scheme_code']}" and d["fy"] == "2025-26" and d["scheme_code"].isdigit()
+    assert d["scheme_type_name"] == "Central Sector Scheme"
+    assert d["grant_no"].isdigit() and d["ministry"] and isinstance(d["outlay_cr"], float)
+    assert pfms.scheme_records([["X SCHEME [12]", "042 - Transfers to States", "47,753.00"]], "2027", "0", "All")[0] == (
+        "scheme/2026-27/042/12", {"fy": "2026-27", "scheme_code": "12", "scheme": "X SCHEME", "grant_no": "042",
+                                  "ministry": "Transfers to States", "outlay_cr": 47753.0, "outlay_text": "47,753.00"})
+
+
+def test_ut_scheme_codes_have_letters():
+    rid, d = pfms.scheme_records([["UT DNH INVESTMENT PROMOTION SCHEME [DN34]", "054 - Dadra and Nagar Haveli", "50.00"]], "2027", "0", "All")[0]
+    assert rid == "scheme/2026-27/054/DN34" and d["scheme"] == "UT DNH INVESTMENT PROMOTION SCHEME"
+
+
+def test_agency_records_keep_no_masked_email():
+    recs = pfms.agency_records(pfms.grid_rows(AG1, pfms.AGENCY_GRID), "10", "7/07")
+    assert len(recs) == 10 and len({rid for rid, _ in recs}) == 10
+    d = recs[0][1]
+    assert d["state"] == "GOA" and d["agency_type"] == "Registered Societies (NGOs)" and d["status"]
+    assert all(r[1]["code_last4"] is None or r[1]["code_last4"].isdigit() for r in recs)
+    assert "@" not in str(recs)
+    assert not d["name"].startswith('"')
+
+
+def test_stage2_queues():
+    p = {p["name"]: p for p in family.PROJECTS}
+    sch, ag = p["budget-pfms-schemes"], p["budget-pfms-agencies"]
+    assert sch["proxy"] == ag["proxy"] == "IN" and sch["geo"] == ag["geo"] == ""
+    assert len(sch["items"]) == 19 * 8 and sch["items"][0]["key"] == "schemes/2027/0"
+    assert all(i["payload"]["type"] != "11/11" for i in ag["items"])        # Individuals: personal data, never queued
+    assert len(ag["items"]) == 37 * 16 and len({i["key"] for i in ag["items"]}) == len(ag["items"])

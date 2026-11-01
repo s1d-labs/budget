@@ -1,0 +1,476 @@
+
+<!DOCTYPE html>
+<!-- BEGIN HEAD -->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><link href="../App_Themes/None/StyleSheet.css" type="text/css" rel="stylesheet" /><meta charset="utf-8" /><title>
+	PFMS
+</title><meta http-equiv="X-UA-Compatible" content="IE=edge" /><meta content="width=device-width, initial-scale=1" name="viewport" /><meta name="description" content="Public Financial Management System (PFMS) is a financial management platform for all plan schemes, a database of all recipient agencies, integration with core banking solution of banks handling plan funds, integration with State Treasuries and efficient and effective tracking of fund flow to the lowest level of implementation for plan scheme of the Government. 
+            It provides information across all plan schemes/ implementation agencies in the country on fund utilization leading to better monitoring, review and decision support system to enhance public accountability in the implementation of plan schemes. 
+            PFMS has gradually improved administration and management programme, reduction of float in the system, direct payment to beneficiaries and greater transparency and accountability in the use of public funds." /><meta name="author" content="PFMS has gradually improved administration and management programme, reduction of float in the system, direct payment to beneficiaries and greater transparency and accountability in the use of public funds." /><link rel="shortcut icon" href="/SitePages/images/pfmsfavicon.png" type="" />
+    <!-- Favicon added on 16th November 2023 by Priyanka -->
+    <link href="/SitePages/css/ModelPOPStyle.css" rel="stylesheet" /> 
+    <!-- Latest compiled and minified CSS -->    
+    <link href="/SitePages/css/bootstrap.min.css" rel="stylesheet" /><link href="/SitePages/css/owl.carousel.min.css" rel="stylesheet" /><link href="/SitePages/css/fontchangeonAtextclick.css" rel="stylesheet" /><link href="/SitePages/css/style.css" rel="stylesheet" /> 
+    <!-- Latest compiled JavaScript -->  
+    
+        
+<link href="../App_Themes/None/StyleSheet.css" type="text/css" rel="stylesheet" /></head>
+<!-- END HEAD -->
+<body id="">
+    <form method="post" action="SchemeListing.aspx" id="aspnetForm">
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="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" />
+
+
+<script src="/ScriptResource.axd?d=OcVhsHsCJFV79tzdxPDbXmqB7sZsPxzHTov1Op3haZJnSWZV3XxS1nnAjVg4yiwD2Msbr3t3C0d-hhG-zenoEGvRdgtREwKoBjopiLr_uw2y2YRjcPblzNORZB2Ls7M6zYXH-YkbOpMbkp903J8Z7ATsmoC4mdijDZt-ZGorX441&amp;t=ffffffffbec1863d" type="text/javascript"></script>
+<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="06427306" />
+<input type="hidden" name="__VIEWSTATEENCRYPTED" id="__VIEWSTATEENCRYPTED" value="" />
+<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="UXgtJhNk5r5eNbzIF7h3WlO6yUUwb+Fvqui7C97PAbJFTUUlI2UQbVZKPPFcSeHV3z52ePiQesLEMqU9kbV19LkVxK1F9gin1Wg2E7yvforwCypPjwH8rVAV3b5zpl2mG98DAzfUL7OA8RDkM8c1YQPanjPNfbYH1qCfxzcbKofOIP4brV61UIlp9T+fW7Ljs8kwGMQfdMKgcq2miTfxwtL8/Fp30SslHzvxi1ytsk46dl2fGzOO8+gvnEkbU2gEcy7Ntcuy4GOCd0mS3O2vgQUNz20n3aIGyAenhx0okCfn13OOoVQJo5XzdhsVCx6drBadTq2e4ThcLJcbAbVXK+24Pa3ugZZEeu4zqqo98vbv/+tkFzL4pprAiJEdbhpy2qhQL37OL3eZq/QCVcJ0hgaM0w8ExI8opnhU9L73FDeF0SD27XcgeLH5mq0pmnjLiJWM22ege1HjOEtpe0dWh/bbO1vSDn/AIFwZO1uqKbAm7hsqbasJuHBZCxz1W3Qu74kjoL/qRdUEKCkspZZVmuGN+GyeSHsOlEpdG3U6kjVaDFmSndJaxjsW8Pr2MRn28COHZjeYHuhDEqe63zbYuhBx0zrNtPDP8yqQMPtr4X4AQarUGZr1470apm4K1whIqtdE7kO4YiR9K61zFnU15t5eTipfoOBuoGJYRTIqhu59ABCfo345gUlEIDt7bP9AeK9BOdFZguZfNLg9vv1sYsBvU+1wayHIP1N3josU3ZhpFR5neFF5mJKMIWwsiUH549L1zzjDFYnh+76ZbSslp5N5HAcc1NEFt+M4oel6R52clVixsft4vWlUC8pUewVk/siH2zEgpjBTBPYoamy7QgLvJUcPc0+ua5i0P1BwFNU3lBwNQEv1XF7fTz6pk5wqQ3dciMjMgo2a23qNIDvL9zwQh89IkXHtp3XXDXQhEYl+9iao3VYTZZHKpsBOODBtKe5LNg3ufFnCTIkb2u3vs0PUJGtkArlVH1f9uakWNw5oN2d0ytMGmBMQQ0au7f4/hCBhi5VBlrDgghXl5bvYy83zrzh+ptNawj0k/bMqEgW5s+YFg3eSgyHHZa1/7g7RzXlnw+djL4dGjxlg0OEneQ==" />
+            <script type="text/javascript" src="/SitePages/js/jquery.min.js"></script>
+            <script type="text/javascript" src="/SitePages/js/bootstrap.bundle.min.js"></script>
+            <script type="text/javascript" src="/SitePages/js/fontsizechangeonAtextclick.js"></script>    
+         <script type="text/javascript" src="/SitePages/js/EncryptionSHA2.js"></script>    
+         <script type="text/javascript" src="/SitePages/js/jsencrypt.js"></script>
+        <contenttemplate>
+            <!-- BEGIN HEADER -->
+            <header>
+                <div class=" header_top">
+                    <div class="main container">
+                        <div class="row m-0 col-sm-12 p-0">
+                            <div class="col-md-3 col-lg-3  col-sm-3">&nbsp;</div>
+                            <div class="col-md-9  col-lg-9 text-end col-sm-9">
+                                <a class="language" href="#skiptomain">Skip to Main content</a><div class="theam_color">
+                                    <button class="bg-warning clr" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In Theme" id="normaltheam" data-color='#ffffff' type="button"></button>
+                                    <button class="bg-white clr" id="whitetheam" data-color='#ffffff' type="button" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Grayscale"></button>
+                                    <button class="bg-dark clr" id="darktheam" data-color='#212529' type="button" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Black & White"></button>
+                                </div>
+                                
+                                <div class="font_div">
+                                    <a href="#" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Fonts Increase" id="btn-increase">A+</a>
+                                    <a href="#" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Fonts Reset" class="resetFont" id="btn-orig">A</a>
+                                    <a href="#" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Fonts decrease" id="btn-decrease">A-</a>
+                                </div>
+                                
+                                <select name="ctl00$ddlLanguage" id="ctl00_ddlLanguage" class="language">
+	<option selected="selected" value="en-us">English</option>
+	<option value="hi-in"> हिन्दी में </option>
+
+</select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <nav class="navbar navbar-expand-lg navbar-light bg-default container">
+                    <a class="navbar-brand" href="/Home.aspx" data-bs-toggle="tooltip" data-bs-placement="bottom" title="PFMS Logo">
+                        <img src="/SitePages/images/logo.png" alt="PFMS" /></a>
+                    <div class="headerlogo">
+                        <img src="/SitePages/images/headerlogo.png" class="" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Government Logos" />
+                    </div>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo03" aria-controls="navbarTogglerDemo03" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                </nav>
+                <nav class="navbar navbar-expand-lg navbar-light bg-light nav-bg p-0">
+                    <div class="collapse navbar-collapse mainmenu" id="navbarTogglerDemo03">
+                        <ul class="nav container navbar-nav">
+                            <li class="nav-item">
+                                <a class="nav-link active" href="/Home.aspx">Home</a>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">About</a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="/SitePages/aboutus.aspx">About PFMS</a></li>
+                                    <li class="dropdown-submenu"><a class="dropdown-item" href="#">Verticals of PFMS <span class="float-end custom-toggle-arrow">&#187</span></a>
+                                        <ul class="dropdown-menu widthdropdown-menu">
+                                            <li><a class="dropdown-item" href="/SitePages/about-Verticals-GIFMIS.aspx">GIFMIS</a></li>
+                                            <li><a class="dropdown-item" href="/SitePages/About_Verticals_TR.aspx">Technology & Risk Management (TRM)</a></li>
+                                            <li><a class="dropdown-item" href="/SitePages/About_Verticals_BR.aspx">Banking & Report Management (BRM)</a></li>
+                                            <li><a class="dropdown-item" href="/SitePages/about-Verticals-RollOut.aspx">Roll Out</a></li>
+                                            <li><a class="dropdown-item" href="/SitePages/about-Verticals-DBT.aspx">Direct Beneficiary Transfer (DBT)</a></li>
+                                            <li><a class="dropdown-item" href="/SitePages/about-Verticals-AdminTraining.aspx">Admin and Training</a></li>
+                                        </ul>
+                                    </li>
+                                    <li><a class="dropdown-item" href="/SitePages/About_EC.aspx">Expenditure Classification</a></li>
+                                    <li><a class="dropdown-item" href="/SitePages/Organisational_Chart_PFMS.aspx">Organizational Charts</a></li>
+                                    <li><a class="dropdown-item" href="/SitePages/About_WhosWho.aspx">Who's who</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Registration</a>
+                                <ul class="dropdown-menu">
+                                    <li class="dropdown-submenu"><a class="dropdown-item" href="#">Agency
+                                        <span class="float-end custom-toggle-arrow">&#187</span></a>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="/SitePages/GetLoginDetails.aspx">Create Login id</a></li>
+                                            <li><a class="dropdown-item" href="/SitePages/SearchAgency.aspx">Retrieve Agencies Login id</a></li>
+                                        </ul>
+                                    </li>
+                                    <li class="dropdown-submenu">
+                                        <a class="dropdown-item" href="#">Register Different Users<span
+                                            class="float-end custom-toggle-arrow">&#187</span></a>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="/SitePages/MISUserRegistrationNew.aspx">MIS Users</a></li>
+                                            <li><a class="dropdown-item" href="/SitePages/DBTBeneficiaryRegistration.aspx">DBT Beneficiary</a></li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Payment Status</a>
+                                <ul class="dropdown-menu">
+                                   <!-- <li><a class="dropdown-item" href="/SitePages/NregaFTOSearchNew.aspx">MGNREGA FTO</a></li>
+                                    <li><a class="dropdown-item" href="/SitePages/ExternalSystemFTOSearchNew.aspx">External System FTO</a></li>-->
+                                    <li><a class="dropdown-item" href="/SitePages/KnowYourPayment_Dw_NewNew.aspx">Know Your Payment</a></li>
+                                   <!-- <li><a class="dropdown-item" href="/SitePages/TrackNSPpayments.aspx">Track NSP Payments</a></li>-->
+                                    <li><a class="dropdown-item" href="/SitePages/DBT_StatusTracker.aspx">DBT Status Tracker</a></li>
+                                    <!-- <li><a class="dropdown-item" href="/SitePages/GSTN_Tracker.aspx">GSTN Tracker</a></li>-->
+                                </ul>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Search Bank/Scheme</a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="/SitePages/BankBranchList.aspx">Bank Branch</a></li>
+                                    <li><a class="dropdown-item" href="/SitePages/SchemeListing.aspx">Scheme</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item"><a class="nav-link " href="/SitePages/OrdersCirculars.aspx">Orders & Circulars</a></li>                           
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Media</a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="/SitePages/Gallery.aspx">Gallery</a></li>                                                 
+                               </ul>
+                            </li>                          
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Contact Us</a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="/SitePages/ContactUs.aspx" target="_blank">PFMS Headquarters Address</a></li>              
+                                    <li><a class="dropdown-item" href="/SitePages/DirectoryofPFMSHeadOffice.aspx" target="_blank">Directory of PFMS Headquarters</a></li>
+                                    <li><a class="dropdown-item" href="/SitePages/DirectoryOfStateDirectorates.aspx" target="_blank">Directory of PFMS State Directorates</a></li>
+                                    <li><a class="dropdown-item" href="/SitePages/Toll-FreeNumber.aspx" target="_blank">Toll Free Number</a></li>
+                                    <li><a class="dropdown-item" href="https://helpdeskpfms-public.freshdesk.com/support/tickets/new">Post Grievance</a></li>
+                                    </ul>
+                            </li>
+                            <form class="form-inline my-2 my-lg-0 "> 
+                                <input name="ctl00$txtSearch" maxlength="50" id="ctl00_txtSearch" autocomplete="off" placeholder="Search" aria-label="Search" onpaste="return false" class="form-control-search form-control mr-sm-2 " oncontextmenu="return false" ondrop="return false" type="search" ondrag="return false" oncopy="return false" oncut="return false" />
+                            </form>
+                            <li class="ml-auto ms-5">
+                                <div class="btnleft">
+                                    <a class=" btn ml-5 mt-1 rounded-pill btn-sm btn-warning" href="/SitePages/Sitemap.aspx" role="button">Site Map</a>                                  
+                                </div>                                                          
+                            </li>
+                           <li class="nav-item dropdown">  
+                               <div class="btnleft btn-lft">
+                                <a class="btn ml-5 mt-1 rounded-pill btn-sm btn-warning" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Login</a>                             
+                                 </div> 
+                                   <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="/SitePages/Users/LoginDetails/Login.aspx">PFMS Login</a></li>
+                                    <li><a class="dropdown-item" href="https://publicfinancialmanagement.freshdesk.com/support/home">Helpdesk Login</a></li>
+                                </ul>                                     
+                            </li>                          
+                        </ul>
+                    </div>
+                </nav>
+            </header>
+            <!-- END HEADER -->
+            <!------------------------BEGIN CONTAINER ------------------------------------->
+            <div id="#skiptomain" class="page-content">
+                
+                
+    
+    <section class="orders_circular pb-3 container">
+        <h1><span id="ctl00_cphBody_lblHadding">Scheme Listing</span>:</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/home.aspx">Home</a></li>
+                <li class="breadcrumb-item"><a href="#">Search Bank/Scheme</a></li>
+                <li class="breadcrumb-item active" aria-current="page"><span id="ctl00_cphBody_Label1">Scheme Listing</span></li>
+            </ol>
+        </nav>
+        <div class="card p-3 mt-4 mb-4">
+            <div class="card-body">
+                <div class="form ">
+                    <span id="ctl00_cphBody_lblmssge" class="alert alert-success mb-3 row m-0">Please enter scheme name or code/grant name or code or a matching character to search the scheme</span>
+                    
+                    <div id="ctl00_cphBody_pnlDetailsPanel">
+	
+                        
+                        <div class="row mb-2">
+                            <label for="inputEmail3" class="col-sm-3 col-form-label">
+                                <span id="ctl00_cphBody_lblSchemeName" class="fright">Scheme name or code:</span>
+                            </label>
+                            <div class="col-sm-7">
+                                <input name="ctl00$cphBody$txtSchemeName" type="text" maxlength="100" id="ctl00_cphBody_txtSchemeName" class="txtsmall form-control" autocomplete="off" oncontextmenu="return false;" oncopy="return false" onpaste="return false" oncut="return false" ondrag="return false" ondrop="return false" />
+                                
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <label for="inputPassword3" class="col-sm-3 col-form-label">
+                                <span id="ctl00_cphBody_lblGrant" class="fright" style="display:inline-block;">Grant name or code:</span></label>
+                            <div class="col-sm-7">
+                                <input name="ctl00$cphBody$txtGrant" type="text" maxlength="100" id="ctl00_cphBody_txtGrant" Class="txtsmall form-control" autocomplete="off" oncontextmenu="return false;" oncopy="return false" onpaste="return false" oncut="return false" ondrag="return false" ondrop="return false" />
+                                
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <label for="inputPassword3" class="col-sm-3 col-form-label">
+                                <span id="ctl00_cphBody_lblSchemeType" class="fright" style="display:inline-block;">Scheme type:</span>
+                            </label>
+                            <div class="col-sm-7">
+                                <select name="ctl00$cphBody$ddlSchemeType" id="ctl00_cphBody_ddlSchemeType" class="form-control">
+		<option value="0">--Select--</option>
+		<option value="1">Centrally Sponsored Scheme</option>
+		<option selected="selected" value="2">Central Sector Scheme</option>
+		<option value="14">UT Scheme</option>
+		<option value="15">Other Central Expenditure</option>
+		<option value="16">Finance Commission Transfers</option>
+		<option value="17">Other Transfers</option>
+		<option value="18">Establishment Expenditure</option>
+
+	</select>
+                            </div>
+                        </div>
+                        
+                        
+                        <div class="row mb-2">
+                            <label for="inputPassword3" class="col-sm-3 col-form-label">
+                                <span id="ctl00_cphBody_lblFinancialYear" class="fright">Financial Year:</span></label>
+                            <div class="col-sm-7">
+                                <select name="ctl00$cphBody$ddlFinancialYear" id="ctl00_cphBody_ddlFinancialYear" Class="txtsmall form-control">
+		<option value="2009">2008-2009</option>
+		<option value="2010">2009-2010</option>
+		<option value="2011">2010-2011</option>
+		<option value="2012">2011-2012</option>
+		<option value="2013">2012-2013</option>
+		<option value="2014">2013-2014</option>
+		<option value="2015">2014-2015</option>
+		<option value="2016">2015-2016</option>
+		<option value="2017">2016-2017</option>
+		<option value="2018">2017-2018</option>
+		<option value="2019">2018-2019</option>
+		<option value="2020">2019-2020</option>
+		<option value="2021">2020-2021</option>
+		<option value="2022">2021-2022</option>
+		<option value="2023">2022-2023</option>
+		<option value="2024">2023-2024</option>
+		<option value="2025">2024-2025</option>
+		<option selected="selected" value="2026">2025-2026</option>
+		<option value="2027">2026-2027</option>
+
+	</select>
+                            </div>
+                        </div>
+                        <div class="row mb-1">
+                            <div class="col-sm-3"></div>
+                            <div id="ctl00_cphBody_tdAdd" class="col-sm-7">
+                                <input type="submit" name="ctl00$cphBody$btnSearch" value="Search" onclick="javascript:WebForm_DoPostBackWithOptions(new WebForm_PostBackOptions(&quot;ctl00$cphBody$btnSearch&quot;, &quot;&quot;, true, &quot;Save&quot;, &quot;&quot;, false, false))" id="ctl00_cphBody_btnSearch" class="btn btn-primary pt-1 pb-1 mt-3 btn-medium" />
+                            </div>
+                        </div>
+                    
+</div>
+                </div>
+            </div>
+            <div class="card m-0 mt-0  ">
+                <div class="card-body p-3 myGridStyle">
+                    <div id="ctl00_cphBody_UpdPnlForGrdVw">
+	
+                            <span id="ctl00_cphBody_lblError" class="text-danger"></span>
+                            <span id="ctl00_cphBody_lblErrorMessageSql" class="BudgetError txt-danger"></span>
+                            <div>
+		<table class="table  table-stript table-bordered" cellspacing="0" rules="all" border="1" id="ctl00_cphBody_grdvSearchSchemeGBE" width="100%">
+			<tr class="bg-warning fw-normal ">
+				<th scope="col"><font color="Black"><a href="javascript:__doPostBack(&#39;ctl00$cphBody$grdvSearchSchemeGBE&#39;,&#39;Sort$SchemeName&#39;)"><font color="Black">Scheme Name</font></a></font></th><th scope="col"><font color="Black"><a href="javascript:__doPostBack(&#39;ctl00$cphBody$grdvSearchSchemeGBE&#39;,&#39;Sort$Grant&#39;)"><font color="Black">Grant(Department/Ministry)</font></a></font></th><th scope="col"><font color="Black"><a href="javascript:__doPostBack(&#39;ctl00$cphBody$grdvSearchSchemeGBE&#39;,&#39;Sort$GBE&#39;)"><font color="Black">Plan Outlay (In Cr.)</font></a></font></th>
+			</tr><tr>
+				<td align="left">
+                                            <a id="ctl00_cphBody_grdvSearchSchemeGBE_ctl02_hlSchemeName" class="linkClass" href="SchemeDetail.aspx?sid=cliiH/gfkvk=&amp;gbid=IjsS6i/XnOs=">ACADEMIC BANK OF CREDITS ABC [3957]</a>
+                                        </td><td class="left">026 - Department of Higher Education</td><td class="right">16.00</td>
+			</tr><tr>
+				<td align="left">
+                                            <a id="ctl00_cphBody_grdvSearchSchemeGBE_ctl03_hlSchemeName" class="linkClass" href="SchemeDetail.aspx?sid=SHRJimM4tO0=&amp;gbid=0Q1AcMLlrYQ=">Agricultural Product Export Development Authority (APEDA) [0226]</a>
+                                        </td><td class="left">010 - Department of Commerce</td><td class="right">80.00</td>
+			</tr><tr>
+				<td align="left">
+                                            <a id="ctl00_cphBody_grdvSearchSchemeGBE_ctl04_hlSchemeName" class="linkClass" href="SchemeDetail.aspx?sid=/wPR1CNEaZs=&amp;gbid=hbJwfTqMnr8=">AGRICULTURAL PRODUCTION AND POST PRODUCTION MECHANIZATION AUGMENTED WITH INNOVATIVE TECHNOLOGIES FOR SUSTAINABLE AGRICULTURE DEVELOPMENT [4233]</a>
+                                        </td><td class="left">002 - Department of Agricultural Research and Education</td><td class="right">95.74</td>
+			</tr><tr>
+				<td align="left">
+                                            <a id="ctl00_cphBody_grdvSearchSchemeGBE_ctl05_hlSchemeName" class="linkClass" href="SchemeDetail.aspx?sid=mapWPo2LS/I=&amp;gbid=SMA51jLI9oc=">AGRICULTURE INFRASTRUCTURE FUND [3894]</a>
+                                        </td><td class="left">001 - Department of Agriculture and Farmers Welfare</td><td class="right">900.00</td>
+			</tr><tr>
+				<td align="left">
+                                            <a id="ctl00_cphBody_grdvSearchSchemeGBE_ctl06_hlSchemeName" class="linkClass" href="SchemeDetail.aspx?sid=Og4qLP2bd4Y=&amp;gbid=zY++wNTn6uk=">AID FOR CULTURAL AND HERITAGE PROJECT [3958]</a>
+                                        </td><td class="left">029 - Ministry of External Affairs</td><td class="right">20.00</td>
+			</tr><tr>
+				<td align="left">
+                                            <a id="ctl00_cphBody_grdvSearchSchemeGBE_ctl07_hlSchemeName" class="linkClass" href="SchemeDetail.aspx?sid=QNZtvEvnHzY=&amp;gbid=vKhveasZhPg=">AID FOR DISASTER RELIEF [3222]</a>
+                                        </td><td class="left">029 - Ministry of External Affairs</td><td class="right">64.00</td>
+			</tr><tr>
+				<td align="left">
+                                            <a id="ctl00_cphBody_grdvSearchSchemeGBE_ctl08_hlSchemeName" class="linkClass" href="SchemeDetail.aspx?sid=8JB5zTAHGrU=&amp;gbid=ay6fIUn2vbY=">Aid to Afghanistan [0322]</a>
+                                        </td><td class="left">029 - Ministry of External Affairs</td><td class="right">100.00</td>
+			</tr><tr>
+				<td align="left">
+                                            <a id="ctl00_cphBody_grdvSearchSchemeGBE_ctl09_hlSchemeName" class="linkClass" href="SchemeDetail.aspx?sid=XIz1FyzwDu4=&amp;gbid=icqWBJ5HSyI=">AID TO AFRICAN COUNTRIES [3223]</a>
+                                        </td><td class="left">029 - Ministry of External Affairs</td><td class="right">225.00</td>
+			</tr><tr>
+				<td align="left">
+                                            <a id="ctl00_cphBody_grdvSearchSchemeGBE_ctl10_hlSchemeName" class="linkClass" href="SchemeDetail.aspx?sid=5/CCALSVw3Q=&amp;gbid=wnb2kfJOYdo=">AID TO BANGLADESH [3213]</a>
+                                        </td><td class="left">029 - Ministry of External Affairs</td><td class="right">120.00</td>
+			</tr><tr>
+				<td align="left">
+                                            <a id="ctl00_cphBody_grdvSearchSchemeGBE_ctl11_hlSchemeName" class="linkClass" href="SchemeDetail.aspx?sid=hy0rjD/QP44=&amp;gbid=po4W0Nz0WrM=">AID TO BHUTAN-OTHER PROJECTS [3215]</a>
+                                        </td><td class="left">029 - Ministry of External Affairs</td><td class="right">2,150.00</td>
+			</tr><tr>
+				<td colspan="3"><table>
+					<tr>
+						<td><span>1</span></td><td><a href="javascript:__doPostBack(&#39;ctl00$cphBody$grdvSearchSchemeGBE&#39;,&#39;Page$2&#39;)">2</a></td><td><a href="javascript:__doPostBack(&#39;ctl00$cphBody$grdvSearchSchemeGBE&#39;,&#39;Page$3&#39;)">3</a></td><td><a href="javascript:__doPostBack(&#39;ctl00$cphBody$grdvSearchSchemeGBE&#39;,&#39;Page$4&#39;)">4</a></td><td><a href="javascript:__doPostBack(&#39;ctl00$cphBody$grdvSearchSchemeGBE&#39;,&#39;Page$5&#39;)">5</a></td><td><a href="javascript:__doPostBack(&#39;ctl00$cphBody$grdvSearchSchemeGBE&#39;,&#39;Page$6&#39;)">6</a></td><td><a href="javascript:__doPostBack(&#39;ctl00$cphBody$grdvSearchSchemeGBE&#39;,&#39;Page$7&#39;)">7</a></td><td><a href="javascript:__doPostBack(&#39;ctl00$cphBody$grdvSearchSchemeGBE&#39;,&#39;Page$8&#39;)">8</a></td><td><a href="javascript:__doPostBack(&#39;ctl00$cphBody$grdvSearchSchemeGBE&#39;,&#39;Page$9&#39;)">9</a></td><td><a href="javascript:__doPostBack(&#39;ctl00$cphBody$grdvSearchSchemeGBE&#39;,&#39;Page$10&#39;)">10</a></td><td><a href="javascript:__doPostBack(&#39;ctl00$cphBody$grdvSearchSchemeGBE&#39;,&#39;Page$11&#39;)">...</a></td>
+					</tr>
+				</table></td>
+			</tr>
+		</table>
+	</div>
+                            
+                        
+</div>
+                    <span id="ctl00_cphBody_lblmassage" class="alert alert-warning row m-0">Scheme and grant are in ascending order by default. To change the order click on table header</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+                <input type="range" min="10" max="100" id="slider" value="40" style="visibility: hidden;" />
+                
+            </div>
+            <!-- BEGIN FOOTER-->
+            <section class="footertop">
+                <ul>
+                    <li><a href="https://finmin.nic.in/" target="_blank">Min. of Finance </a></li>
+                    <li><a href="https://cga.nic.in/" target="_blank">CGA </a></li>
+                    <li><a href="https://mygov.in/" target="_blank">MyGov.in</a></li>
+                    <li><a href="https://elekha.nic.in/" target="_blank">e-Lekha </a></li>
+                    <li><a href="https://gepg.nic.in/" target="_blank">GePG </a></li>
+                    <li><a href="https://dbtbharat.gov.in/" target="_blank">DBT Mission </a></li>
+                    <li><a href="https://pfmsdashboard.gov.in/" target="_blank">PFMS Dashboard </a></li>
+                    <li><a href="https://prakalp.cga.gov.in/" target="_blank">Prakalp </a></li>
+                    <li><a href="https://bharatkosh.gov.in/" target="_blank">Bharatkosh </a></li>
+                </ul>
+            </section>
+             <footer>
+                <div class="container">
+                    <div class="row  m-0  ">
+                        <div class="col-md-4 col-sm-12 disclaimer">
+                            <h2>Disclaimer</h2>
+                            <p>The Website is intended to provide the information on the Schemes of Union Government to the different stakeholders. The information reflected here is based on data uploaded by the different Central Government Departments and Ministries. While utmost care has been taken to provide accurate and updated information, Office of the Controller General of Accounts does not hold any responsibility on accuracy, completeness, adequacy, validity and reliability of information for any purpose.</p>
+                            <h6><a href="/Sitepages/Terms_Conditions.aspx" class="text-warning">Terms and Conditions</a></h6>
+                            <h6><a href="/SitePages/FAQ.aspx" class="text-warning">FAQ</a></h6>
+                        </div>
+                        <div class="col-md-4 col-sm-12 pl-5">
+                            <div class="foolinks">
+                                <h2>PFMS Policies</h2>
+                                <ul>
+                                    <li><a href="/Sitepages/PFMS_Policies.aspx">Copyright Policy</a></li>
+                                    <li><a href="/Sitepages/PrivacyPolicy.aspx">Privacy Policy</a></li>
+                                    <li><a href="/Sitepages/hyper_linking_policy.aspx">Hyper Linking Policy</a></li>
+                                    <li><a href="/Sitepages/SecurityPolicy.aspx">Security Policy</a></li>
+                                     <li><a href="/Sitepages/DataProtectionPolicy.aspx">Data Protection Policy</a></li>
+                                    <li><a href="/Sitepages/CMAPPolicy.aspx">CMAP Policy</a></li>
+                                    <li><a href="/Sitepages/ContentArchivalPolicy.aspx">Content Archival Policy</a></li>
+                                    <li><a href="/Sitepages/MasterWebsiteMonitoringPolicy.aspx">Website Monitoring Policy</a></li>
+                                    <li><a href="/Sitepages/ContingencyManagementPlan.aspx">Contingency Management Plan</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-sm-12 address">
+                            <h2>Reach Us</h2>
+                            <h4>Public Financial Management System - PFMS</h4>
+                            <p>3rd & 4th Floor, Shivaji Stadium Annexe Connaught Place, Shaheed Bhagat Singh Marg,
+</br>New Delhi – 110001</p>                           
+                            <br />
+                            <h6><a class=" text-warning ml-5 mt-3" href="/Sitepages/Website_Manager.aspx">Website Manager </a></h6>
+                        </div>
+                    </div>
+                </div>
+                <div class="row m-0 copyright">
+                    <div class="container">
+                        <p>
+                            Last Updated :
+                            <span id="ctl00_lblPageUpdateDate">29-02-2024 | </span>
+                            © 2024 PFMS. All Right Reserved
+                        </p>
+                        <p style="color:#272749; font-size:1px;">Image by vecstock on Freepik</p>
+                    </div>
+                </div>
+            </footer> 
+
+        <script type="text/javascript">
+            function OpenLink(url) {
+                var newwind = window.open(url);
+                window.opener = null;
+                newwind = null;
+            }
+        </script>
+        <!-- Start of Code for Font size increament & decrease -->
+
+        <script>
+            var counterplus = 0;
+            var counterminus = 0;
+            var $affectedElements = $("p, h1, h2, h3, h4, h5, h6, nav-item, div"); // Can be extended, ex. $("div, p, span.someClass")
+
+            // Storing the original size in a data attribute so size can be reset
+            $affectedElements.each(function () {
+                var $this = $(this);
+                $this.data("orig-size", $this.css("font-size"));
+            });
+            $("#btn-increase").click(function () {
+                counterminus = 0;
+                counterplus++;
+                if (counterplus <= 3) {
+                    changeFontSize(1);
+                }
+            })
+            $("#btn-decrease").click(function () {
+                counterplus = 0;
+                counterminus++;
+                if (counterminus <= 3) {
+                    changeFontSize(-1);
+                }
+            })
+            $("#btn-orig").click(function () {
+                counterplus = 0;
+                counterminus = 0;
+                $affectedElements.each(function () {
+                    var $this = $(this);
+                    $this.css("font-size", $this.data("orig-size"));
+                });
+            })
+            function changeFontSize(direction) {
+                $affectedElements.each(function () {
+                    var $this = $(this);
+                    $this.css("font-size", parseInt($this.css("font-size")) + direction);
+                });
+            }
+        </script>
+        <!-- End of Code for Font size increament & decrease -->
+
+        <script>
+            var selector = document.querySelectorAll('.navbar-nav a');
+            var url = window.location.href;
+            // console.log('window url', url);
+            console.log('selector', selector);
+            var target = url.split('/');
+            // console.log(target);
+            $(selector).each(function () {
+                if ($(this).attr('href') === ('/SitePages/' + target[target.length - 1])) {
+                    $(selector).removeClass('active');
+                    $(this).removeClass('active').parents('li').children('a').last().addClass('active');
+                }
+            });
+        </script>
+        <!-- END JAVASCRIPTS --> 
+        <!--END FOOTER-->
+
+            <script type="text/javascript" src="/SitePages/js/owl.carousel.min.js"></script>            
+            <script type="text/javascript" src="/SitePages/js/theme_color.js"></script> 
+            <script type="text/javascript" src="/SitePages/js/CommonFunction.js"></script>
+    </form>
+</body>
+<!-- END BODY -->
+</html>

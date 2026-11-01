@@ -1,0 +1,660 @@
+
+<!DOCTYPE html>
+<!-- BEGIN HEAD -->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><link href="../App_Themes/None/StyleSheet.css" type="text/css" rel="stylesheet" /><meta charset="utf-8" /><title>
+	Search Agency
+</title><meta http-equiv="X-UA-Compatible" content="IE=edge" /><meta content="width=device-width, initial-scale=1" name="viewport" /><meta name="description" content="Public Financial Management System (PFMS) is a financial management platform for all plan schemes, a database of all recipient agencies, integration with core banking solution of banks handling plan funds, integration with State Treasuries and efficient and effective tracking of fund flow to the lowest level of implementation for plan scheme of the Government. 
+            It provides information across all plan schemes/ implementation agencies in the country on fund utilization leading to better monitoring, review and decision support system to enhance public accountability in the implementation of plan schemes. 
+            PFMS has gradually improved administration and management programme, reduction of float in the system, direct payment to beneficiaries and greater transparency and accountability in the use of public funds." /><meta name="author" content="PFMS has gradually improved administration and management programme, reduction of float in the system, direct payment to beneficiaries and greater transparency and accountability in the use of public funds." /><link rel="shortcut icon" href="/SitePages/images/pfmsfavicon.png" type="" />
+    <!-- Favicon added on 16th November 2023 by Priyanka -->
+    <link href="/SitePages/css/ModelPOPStyle.css" rel="stylesheet" /> 
+    <!-- Latest compiled and minified CSS -->    
+    <link href="/SitePages/css/bootstrap.min.css" rel="stylesheet" /><link href="/SitePages/css/owl.carousel.min.css" rel="stylesheet" /><link href="/SitePages/css/fontchangeonAtextclick.css" rel="stylesheet" /><link href="/SitePages/css/style.css" rel="stylesheet" /> 
+    <!-- Latest compiled JavaScript -->  
+    
+        
+<link href="../App_Themes/None/StyleSheet.css" type="text/css" rel="stylesheet" /></head>
+<!-- END HEAD -->
+<body id="">
+    <form method="post" action="SearchAgency.aspx" id="aspnetForm">
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="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" />
+
+
+<script src="/ScriptResource.axd?d=OcVhsHsCJFV79tzdxPDbXmqB7sZsPxzHTov1Op3haZJnSWZV3XxS1nnAjVg4yiwD2Msbr3t3C0d-hhG-zenoEGvRdgtREwKoBjopiLr_uw2y2YRjcPblzNORZB2Ls7M6zYXH-YkbOpMbkp903J8Z7ATsmoC4mdijDZt-ZGorX441&amp;t=ffffffffbec1863d" type="text/javascript"></script>
+<script src="/ScriptResource.axd?d=3bze3V1-yNW9HzQ09wBPqvX8cUD3gXa_avFolbAy1ZkO7JCkD5YFLd9sMbT-NQLiyECUjjyS2dPSfRFLHKZ-hYlHHHC7VJmzKn1bjSh2m05XEhy35REYiWl0bRe5QqLM79SkEeDKDMrimv1Wscycsw2&amp;t=7d5986a" type="text/javascript"></script>
+<script src="/ScriptResource.axd?d=QwJbVYHJbe_rOuljCYTPgM0K_BuuOfFsy-58B49oBuBE8WWdSakgZ2n2vnNSPtN-Sq6JJeeYUuteABgoyuYYsxfpbHAMBQNicREw3j3fvnvRrRy4-1UyHMdweLXPbUW-0&amp;t=7d5986a" type="text/javascript"></script>
+<script src="/ScriptResource.axd?d=SWMJUuabD4ccvDpAWq_e9rfWqyoAnAraweYiufkAWkRrFXF-yFSjv_G9TIH7jSNW7NXf2eCDMz8dhpfyQHZWxjBD92zj3yhaED_t0guLokhssqQ8_Az1cLkrlG5X6lQ50&amp;t=7d5986a" type="text/javascript"></script>
+<script src="/ScriptResource.axd?d=YtEMCJwbtI1fzlRlZr6v3fVgnNoJRJGxz3uBT-P9k3TPuh-Lbiwc68eiHXeZZDZRlm0nur0YJtAaMd2MJHNQMajs6ULnZ3iOvnqZAk-HkYtTCPLXU6SLtNMrqc7sgl_60&amp;t=7d5986a" type="text/javascript"></script>
+<script src="/ScriptResource.axd?d=erMNb2k8tmGt4dm6zgi65WCX26MZ4F3vmOhKcpxlu8XV0Rpcdlt_r-gCCIYFp5Q6zqEPXU9mXMOoodubkN_0987AJpxwf1NXFvaWjtXofZ-b5ReYjdWPqQAxlVhvgTuzsVjcsdAAHL33iQfjylyNzQ2&amp;t=7d5986a" type="text/javascript"></script>
+<script src="/ScriptResource.axd?d=llWcxB9KxDN7S0VA_nN5hC08d_Ct21lpoxstiKbxFgdFke3OHSQH26m6KnTc_4KqtFDN7PSilwvFi6EwaQiYlhCFBiScqBsZZM4xddTezBuWgknt-nSogKOiOkylgIr10&amp;t=7d5986a" type="text/javascript"></script>
+<script src="/ScriptResource.axd?d=Ox634ic6Ubk7Cik4cjn1hkjsG06a4UnfjCBG-i71Sx39xf4KPoh2vW2RzVqlE_OSV1GHfXycVW57lHeaYQYcOoXyOxqwE2NeW3GB1yJHgHgXRxwQc7XfboOAZm7FGDQQ0&amp;t=7d5986a" type="text/javascript"></script>
+<script src="/ScriptResource.axd?d=6s4Pt15hzA0bP-SJjxX0F7X8JNCfRqYTgDegv5vrqo_rD5jeEsFFLfZ1xilsDzWV1w2y91qE6eCemDPL1u4KyQlgKV7e3P4C1Ysyg6FV7VnHPOIjIlc-w-D2KFawfTup0&amp;t=7d5986a" type="text/javascript"></script>
+<script src="/ScriptResource.axd?d=bdVX5egfGkTm_Z72zPq1n_mpBt8iTpQGryaRZ6bmROyVh7WILuvaaVFTekVAISUUhKemEedQR4oMP7SCGw7dAeypTiG3BEREyBvdrRu36HHuZuUwqlI-kV3Yrb7la_FS0&amp;t=7d5986a" type="text/javascript"></script>
+<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="730F525E" />
+<input type="hidden" name="__VIEWSTATEENCRYPTED" id="__VIEWSTATEENCRYPTED" value="" />
+<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="tiPHfyxQGa0nat8DUosviu26y2D/y2mGTX5WJ86oxeyzjk6QrxJDV48oIOVBZKaR+UsTgB2yfmxTEGjOVSkkLJINRPSUeRgtizonBUOGrJQo84LG/8m+Y+bzG7za8RovErARQJ+exzdvp5S63C6ImRM3ggf7e2zOKaVsNes5+UTGrEsSZbzva6rD2CscRcwEQa9CnEiY+akCbB8F2vAlC3jSUtqQyHIcRW61a4jpKdoKWQu2MUdj9PCX0Mv1H+zIZ1/tZ6qAz1cIs4oeEZKmOh9JhVROAaqv1IOTUhzF0LRXWq/9gIcmv9Vb3dtoER7PHft5t5RntAixiw9smDm6FE0gdo7NiFcx6lbB2FI2uz+PB8Un96/8t7nSQTYLoZVQieTYVy6kv5jNqr5aj3nPHjgP548h/BIAST1wsbDeQ17uUHhPOETyW9FFMLsASForGxJ7rwYDiFsICZ0FYxvcZxQ537XwIAMRBZ44Vz/2R0z4pjecGtfgL8UIGPCKTvrtHYZyzMfw6p4kkxsBJw1NAJwatd5eVQ5ahfQ59P2m2KLRfMMcurJuQtOYhT2R6BkO9RGnvwi5PdOuvFblhqN+dPEaqVDwg7IOaVfdyvSztzcWF7CW+LWw47Px6NFMe+KfBvmb81V11LRnG5nlo2wZYRYpXX8D9c4m/T/rT3GbPBO1JDrwV3kd91ReeaLdUAfmFC16IUY9LxD89/1XTy1lDl9Iu+50X8EUg6rRnUw51StGtl32kaG3UzhtXsPpwoBQ+ObY158Ae5Y9BryV5v1dqHkKWHZkPkEVwavf2zKEh2wX023g5RAlO5vSw3cRSjAzhItxOGrqHcx35h6CCi0UhkALz/quIY8KEpaXvj6QnD50Hr5cpwjnmhXpMKAz4kKkul/iVHNML55wKKU9uxLJAiTWEgh8QsRzHD9sDd5wBpfHD6Djgb1m23zijSd5p8yScy3NRFvq6gQsnsLDNbUK4kykHtqihnYnYT15IWWLyfmtCqRwGpHGmcy42IF29pKLuZvjl8RtCI+cSwPNQ32Lro17rOOmV0m5NN6vpXr0/lJlxunCuWbiEDseZvHeQZP2hnrEYGVowoq4PSwbK0ONWCWbxhldcKijOhbNF4Si45wyTahuJ+6zejkmOQKzkDYLJKw/kH3AvleaFrjJ3M9YRFer5F3R4GLmgTN0jYoW6b198eASWQ/WSdy357FxL6awBpF+/GIX36SZOqedSiLBLlDP2RRbRY4H1dsBkiuF+FaAcMuTmne1fUEClt1ooNotZPLrbzUYIaYLiqnvtrqynfrKELEZKM7J3S9P+j0A9x40VbMj2D9RCzoHmeaZu0EvZcUXF/8wjs7vMsQ1tYwaRUwobiQQQiHwlABjIjolladVSM9oU91fTlTs2MDBg9fRrqPoaTWb4tcd0CDlXccBBTjqIjXbHqSTb2nq0DAzKz+L/qd0ttlrBSeX1CK9jLFbHshoUkFzOoetu8EghrovlOJlPWGOiO18NTcEYhNwYyIU0rrFGIoqcd5jWknlz56ELyq4KGLL2k75bf5JhUFW1iPF7y2Z7F07k0Oiig2tGyMkZCn5RfEFPDJvSG5jvSd28g59iRlTcScAgJqx/r5oLszRoYoEN3KzkJ1dGY82EJET/e7RiPe0x5pq9ChGuqaEljElDKJzPlWdQcOa7tIH8FNH6yuWmUVze6lEr0B82DYlud0TBj19Kz6lvpOTb0zuIMWC0o5G9TXUpKv5iDqgFdfohl3sKWJUyr6JKZNeWxxmuNAvhR5mlw0ij2tOczTxCRhaCHvdL1RkXWOsmC0yW2VwN7Wo5xPxWlJsq6536ZZNlxIY5oYBPpY95smK/IE35clH4N5lxMyIBPBJDrSDqF4f7Z4ZxFws9NyZCUjxdbXhGjvu0Yi0jLyzxx0YAfcbibRrO3JwyqfJkk51K3X11gLBV7DMhj7XkyPMCoINuhGl/mlhrJdnCeEFIfOWtxT/NlrC1H7nxw2CVog00M88uhH36DD8eZOyRaGPxGO+4npgzKYMofcgxCiietc6Up3GTH1vEy11hPLKmbBoYKmR63D47GYhOCvMSwU2mC8VFHOxfoLPkyGnzh29PrywLGu0xzNiF5MtIzqCtVu7/5JbouXmYWPxEYwd+T9kjDYcyltN7f0lxsHzPFI/ZJSiARjwq2Ccpa0K6j74Tgpzcdse0oJb6J5SKJHN7bFdMMd1tFGqCmbAwafPgb04N5YsnHLH" />
+            <script type="text/javascript" src="/SitePages/js/jquery.min.js"></script>
+            <script type="text/javascript" src="/SitePages/js/bootstrap.bundle.min.js"></script>
+            <script type="text/javascript" src="/SitePages/js/fontsizechangeonAtextclick.js"></script>    
+         <script type="text/javascript" src="/SitePages/js/EncryptionSHA2.js"></script>    
+         <script type="text/javascript" src="/SitePages/js/jsencrypt.js"></script>
+        <contenttemplate>
+            <!-- BEGIN HEADER -->
+            <header>
+                <div class=" header_top">
+                    <div class="main container">
+                        <div class="row m-0 col-sm-12 p-0">
+                            <div class="col-md-3 col-lg-3  col-sm-3">&nbsp;</div>
+                            <div class="col-md-9  col-lg-9 text-end col-sm-9">
+                                <a class="language" href="#skiptomain">Skip to Main content</a><div class="theam_color">
+                                    <button class="bg-warning clr" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In Theme" id="normaltheam" data-color='#ffffff' type="button"></button>
+                                    <button class="bg-white clr" id="whitetheam" data-color='#ffffff' type="button" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Grayscale"></button>
+                                    <button class="bg-dark clr" id="darktheam" data-color='#212529' type="button" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Black & White"></button>
+                                </div>
+                                
+                                <div class="font_div">
+                                    <a href="#" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Fonts Increase" id="btn-increase">A+</a>
+                                    <a href="#" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Fonts Reset" class="resetFont" id="btn-orig">A</a>
+                                    <a href="#" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Fonts decrease" id="btn-decrease">A-</a>
+                                </div>
+                                
+                                <select name="ctl00$ddlLanguage" id="ctl00_ddlLanguage" class="language">
+	<option selected="selected" value="en-us">English</option>
+	<option value="hi-in"> हिन्दी में </option>
+
+</select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <nav class="navbar navbar-expand-lg navbar-light bg-default container">
+                    <a class="navbar-brand" href="/Home.aspx" data-bs-toggle="tooltip" data-bs-placement="bottom" title="PFMS Logo">
+                        <img src="/SitePages/images/logo.png" alt="PFMS" /></a>
+                    <div class="headerlogo">
+                        <img src="/SitePages/images/headerlogo.png" class="" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Government Logos" />
+                    </div>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo03" aria-controls="navbarTogglerDemo03" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                </nav>
+                <nav class="navbar navbar-expand-lg navbar-light bg-light nav-bg p-0">
+                    <div class="collapse navbar-collapse mainmenu" id="navbarTogglerDemo03">
+                        <ul class="nav container navbar-nav">
+                            <li class="nav-item">
+                                <a class="nav-link active" href="/Home.aspx">Home</a>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">About</a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="/SitePages/aboutus.aspx">About PFMS</a></li>
+                                    <li class="dropdown-submenu"><a class="dropdown-item" href="#">Verticals of PFMS <span class="float-end custom-toggle-arrow">&#187</span></a>
+                                        <ul class="dropdown-menu widthdropdown-menu">
+                                            <li><a class="dropdown-item" href="/SitePages/about-Verticals-GIFMIS.aspx">GIFMIS</a></li>
+                                            <li><a class="dropdown-item" href="/SitePages/About_Verticals_TR.aspx">Technology & Risk Management (TRM)</a></li>
+                                            <li><a class="dropdown-item" href="/SitePages/About_Verticals_BR.aspx">Banking & Report Management (BRM)</a></li>
+                                            <li><a class="dropdown-item" href="/SitePages/about-Verticals-RollOut.aspx">Roll Out</a></li>
+                                            <li><a class="dropdown-item" href="/SitePages/about-Verticals-DBT.aspx">Direct Beneficiary Transfer (DBT)</a></li>
+                                            <li><a class="dropdown-item" href="/SitePages/about-Verticals-AdminTraining.aspx">Admin and Training</a></li>
+                                        </ul>
+                                    </li>
+                                    <li><a class="dropdown-item" href="/SitePages/About_EC.aspx">Expenditure Classification</a></li>
+                                    <li><a class="dropdown-item" href="/SitePages/Organisational_Chart_PFMS.aspx">Organizational Charts</a></li>
+                                    <li><a class="dropdown-item" href="/SitePages/About_WhosWho.aspx">Who's who</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Registration</a>
+                                <ul class="dropdown-menu">
+                                    <li class="dropdown-submenu"><a class="dropdown-item" href="#">Agency
+                                        <span class="float-end custom-toggle-arrow">&#187</span></a>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="/SitePages/GetLoginDetails.aspx">Create Login id</a></li>
+                                            <li><a class="dropdown-item" href="/SitePages/SearchAgency.aspx">Retrieve Agencies Login id</a></li>
+                                        </ul>
+                                    </li>
+                                    <li class="dropdown-submenu">
+                                        <a class="dropdown-item" href="#">Register Different Users<span
+                                            class="float-end custom-toggle-arrow">&#187</span></a>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="/SitePages/MISUserRegistrationNew.aspx">MIS Users</a></li>
+                                            <li><a class="dropdown-item" href="/SitePages/DBTBeneficiaryRegistration.aspx">DBT Beneficiary</a></li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Payment Status</a>
+                                <ul class="dropdown-menu">
+                                   <!-- <li><a class="dropdown-item" href="/SitePages/NregaFTOSearchNew.aspx">MGNREGA FTO</a></li>
+                                    <li><a class="dropdown-item" href="/SitePages/ExternalSystemFTOSearchNew.aspx">External System FTO</a></li>-->
+                                    <li><a class="dropdown-item" href="/SitePages/KnowYourPayment_Dw_NewNew.aspx">Know Your Payment</a></li>
+                                   <!-- <li><a class="dropdown-item" href="/SitePages/TrackNSPpayments.aspx">Track NSP Payments</a></li>-->
+                                    <li><a class="dropdown-item" href="/SitePages/DBT_StatusTracker.aspx">DBT Status Tracker</a></li>
+                                    <!-- <li><a class="dropdown-item" href="/SitePages/GSTN_Tracker.aspx">GSTN Tracker</a></li>-->
+                                </ul>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Search Bank/Scheme</a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="/SitePages/BankBranchList.aspx">Bank Branch</a></li>
+                                    <li><a class="dropdown-item" href="/SitePages/SchemeListing.aspx">Scheme</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item"><a class="nav-link " href="/SitePages/OrdersCirculars.aspx">Orders & Circulars</a></li>                           
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Media</a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="/SitePages/Gallery.aspx">Gallery</a></li>                                                 
+                               </ul>
+                            </li>                          
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Contact Us</a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="/SitePages/ContactUs.aspx" target="_blank">PFMS Headquarters Address</a></li>              
+                                    <li><a class="dropdown-item" href="/SitePages/DirectoryofPFMSHeadOffice.aspx" target="_blank">Directory of PFMS Headquarters</a></li>
+                                    <li><a class="dropdown-item" href="/SitePages/DirectoryOfStateDirectorates.aspx" target="_blank">Directory of PFMS State Directorates</a></li>
+                                    <li><a class="dropdown-item" href="/SitePages/Toll-FreeNumber.aspx" target="_blank">Toll Free Number</a></li>
+                                    <li><a class="dropdown-item" href="https://helpdeskpfms-public.freshdesk.com/support/tickets/new">Post Grievance</a></li>
+                                    </ul>
+                            </li>
+                            <form class="form-inline my-2 my-lg-0 "> 
+                                <input name="ctl00$txtSearch" maxlength="50" id="ctl00_txtSearch" autocomplete="off" placeholder="Search" aria-label="Search" onpaste="return false" class="form-control-search form-control mr-sm-2 " oncontextmenu="return false" ondrop="return false" type="search" ondrag="return false" oncopy="return false" oncut="return false" />
+                            </form>
+                            <li class="ml-auto ms-5">
+                                <div class="btnleft">
+                                    <a class=" btn ml-5 mt-1 rounded-pill btn-sm btn-warning" href="/SitePages/Sitemap.aspx" role="button">Site Map</a>                                  
+                                </div>                                                          
+                            </li>
+                           <li class="nav-item dropdown">  
+                               <div class="btnleft btn-lft">
+                                <a class="btn ml-5 mt-1 rounded-pill btn-sm btn-warning" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Login</a>                             
+                                 </div> 
+                                   <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="/SitePages/Users/LoginDetails/Login.aspx">PFMS Login</a></li>
+                                    <li><a class="dropdown-item" href="https://publicfinancialmanagement.freshdesk.com/support/home">Helpdesk Login</a></li>
+                                </ul>                                     
+                            </li>                          
+                        </ul>
+                    </div>
+                </nav>
+            </header>
+            <!-- END HEADER -->
+            <!------------------------BEGIN CONTAINER ------------------------------------->
+            <div id="#skiptomain" class="page-content">
+                
+                
+    
+    <section class="orders_circular container pb-0">
+        <h1>
+            <span id="ctl00_cphBody_lblSearch">Retrieve Agencies Login id</span>:
+        </h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/Home.aspx">Registration</a></li>
+                <li class="breadcrumb-item"><a href="#">Agency</a></li> 
+                <li class="breadcrumb-item active" aria-current="page">Retrieve Agencies Login id</li>
+            </ol>
+        </nav>
+        <div class="card p-3 mt-4 mb-4">
+            <div class="card-body">
+                <div class="form ">
+                    
+                    <span id="ctl00_cphBody_lblErrorMessageSql" class="BudgetError err text-danger row m-0"></span>
+                    <div class="row mb-1">
+                        <label for="inputEmail3" class="col-sm-2 col-form-label">
+                            <span id="ctl00_cphBody_lblScheme">Scheme:</span>
+                        </label>
+                        <div class="col-sm-7">
+                            
+
+<script type="text/javascript" >
+    function Selected(source, eventArgs) {
+        var results = eval('(' + eventArgs.get_value() + ')');
+        var hdnSchemeID = 'ctl00_cphBody_ucSchemes_hdnSchemeId';
+        if(hdnSchemeID!='')
+        document.getElementById(hdnSchemeID).value = results;
+        }      
+    function showSearchScheme() {        
+    if(document.getElementById('ctl00_ctl00_cphBody_cphBody_'+'hdnAccess') != null)
+    {        
+    var url = 'https://pfms.gov.in/Agency/GetAllScheme.aspx';
+      url += "?query=" + document.getElementById('ctl00_cphBody_ucSchemes_txtBxScheme').value + "&c=ctl00_cphBody_ucSchemes_txtBxScheme&access="+document.getElementById('ctl00_ctl00_cphBody_cphBody_'+'hdnAccess').value;
+    }
+    else        
+    {
+    var url = 'https://pfms.gov.in/Agency/GetAllScheme.aspx';
+      url += "?query=" + document.getElementById('ctl00_cphBody_ucSchemes_txtBxScheme').value + "&c=ctl00_cphBody_ucSchemes_txtBxScheme";
+        }
+        window.open(url, "mywindow", "height=880,width=1000,left=100,top=100,resizable=yes,scrollbars=yes,toolbar=yes,menubar=no,location=no,directories=no, status=1");
+     return false;
+    }      
+        function setScheme(SchemeID, SchemeName) {
+            $("#ctl00_cphBody_ucSchemes_txtBxScheme").val(SchemeName).trigger('blur')[0].lastSelected = SchemeName;
+            $("#ctl00_cphBody_ucSchemes_hdnSchemeId").val(SchemeID);
+        }
+function ShowOptions(control, args)
+{
+    control._completionListElement.style.zIndex = 10000001;
+}
+</script>      
+<input name="ctl00$cphBody$ucSchemes$txtBxScheme" type="text" maxlength="25" id="ctl00_cphBody_ucSchemes_txtBxScheme" class="txtbig form-control txtsmall" autocomplete="off" />
+
+
+<a id="sss" href="#" onclick="javascript:showSearchScheme()">Select Scheme</a>
+<input name="ctl00$cphBody$ucSchemes$hdnSchemeId" type="hidden" id="ctl00_cphBody_ucSchemes_hdnSchemeId" />
+
+                            <input type="hidden" name="ctl00$cphBody$hdnAccess" id="ctl00_cphBody_hdnAccess" value="yes" />
+                        </div>
+                    </div>
+                    <div class="row mb-1">
+                        <div class="col-sm-6 row p-0 m-0">
+                            <label for="inputPassword3" class="col-sm-4 col-form-label">
+                                <span id="ctl00_cphBody_lblStatus">Agency Status:</span></label>
+                            <div class="col-sm-7">
+                                <select name="ctl00$cphBody$ddlStatus" id="ctl00_cphBody_ddlStatus" class="form-control">
+	<option selected="selected" value="0">--All--</option>
+	<option value="33">Pending PD Approval</option>
+	<option value="34">Pending PrAO Approval</option>
+	<option value="35">Pending Super Admin Approval</option>
+	<option value="38">Rejected</option>
+	<option value="39">BlackListed</option>
+	<option value="41">InActive</option>
+	<option value="43">Approved</option>
+	<option value="85">Merged</option>
+	<option value="787">Disabled</option>
+
+</select>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 row p-0 m-0">
+                            <label for="inputPassword3" class="col-sm-4 col-form-label">
+                                <span id="ctl00_cphBody_lblType">Agency Type:</span></label>
+                            <div class="col-sm-7">
+                                <select name="ctl00$cphBody$ddlType" id="ctl00_cphBody_ddlType" class="form-control">
+	<option value="0">--All--</option>
+	<option value="5/05">Central Government</option>
+	<option value="1/01">Central Government PSUs</option>
+	<option value="2/02">State Government PSUs</option>
+	<option value="9/09">Statutory Bodies</option>
+	<option value="4/04">Local Bodies</option>
+	<option value="3/03">Registered Societies (Govt.,Autonomous Bodies)</option>
+	<option selected="selected" value="7/07">Registered Societies (NGOs)</option>
+	<option value="8/08">Private Sector Companies</option>
+	<option value="10/10">Trusts</option>
+	<option value="11/11">Individuals</option>
+	<option value="12/12">International Organizations</option>
+	<option value="13/13">State Government Institutions</option>
+	<option value="14/14">State Govt. DDO</option>
+	<option value="15/15">Other Registered Societies</option>
+	<option value="16/16">Academic Institutions ( Government )</option>
+	<option value="17/17">Academic Institutions ( Private)</option>
+	<option value="18/18">Non Profitable Organization(NPO)</option>
+
+</select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-1">
+                        <div class="col-sm-6 row p-0 m-0">
+                            <label for="inputPassword3" class="col-sm-4 col-form-label">
+                                <span id="ctl00_cphBody_lblState">State:</span></label>
+                            <div class="col-sm-7">
+                                <select name="ctl00$cphBody$ddlState" id="ctl00_cphBody_ddlState" class="form-control">
+	<option value="0">--All--</option>
+	<option value="1">ANDAMAN AND NICOBAR ISLANDS</option>
+	<option value="2">ANDHRA PRADESH</option>
+	<option value="3">ARUNACHAL PRADESH</option>
+	<option value="4">ASSAM</option>
+	<option value="5">BIHAR</option>
+	<option value="36">CENTRAL AGENCY</option>
+	<option value="6">CHANDIGARH</option>
+	<option value="33">CHHATTISGARH</option>
+	<option value="9">DELHI</option>
+	<option selected="selected" value="10">GOA</option>
+	<option value="11">GUJARAT</option>
+	<option value="12">HARYANA</option>
+	<option value="13">HIMACHAL PRADESH</option>
+	<option value="14">JAMMU AND KASHMIR</option>
+	<option value="34">JHARKHAND</option>
+	<option value="15">KARNATAKA</option>
+	<option value="16">KERALA</option>
+	<option value="38">LADAKH</option>
+	<option value="19">LAKSHADWEEP</option>
+	<option value="17">MADHYA PRADESH</option>
+	<option value="18">MAHARASHTRA</option>
+	<option value="20">MANIPUR</option>
+	<option value="21">MEGHALAYA</option>
+	<option value="22">MIZORAM</option>
+	<option value="23">NAGALAND</option>
+	<option value="24">ODISHA</option>
+	<option value="25">PUDUCHERRY</option>
+	<option value="26">PUNJAB</option>
+	<option value="27">RAJASTHAN</option>
+	<option value="28">SIKKIM</option>
+	<option value="29">TAMIL NADU</option>
+	<option value="37">TELANGANA</option>
+	<option value="7">THE DADRA AND NAGAR HAVELI AND DAMAN AND DIU</option>
+	<option value="30">TRIPURA</option>
+	<option value="31">UTTAR PRADESH</option>
+	<option value="35">UTTARAKHAND</option>
+	<option value="32">WEST BENGAL</option>
+
+</select>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 row p-0 m-0">
+                            <label for="inputPassword3" class="col-sm-4 col-form-label">
+                                <span id="ctl00_cphBody_lblDistrict">District:</span></label>
+                            <div class="col-sm-7">
+                                <select name="ctl00$cphBody$ddlDistrict" id="ctl00_cphBody_ddlDistrict" class="form-control">
+	<option selected="selected" value="0">--All--</option>
+	<option value="816">KUSHAVATI</option>
+	<option value="123">NORTH GOA</option>
+	<option value="124">SOUTH GOA</option>
+
+</select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-1">
+                        <div class="col-sm-6 row p-0 m-0">
+                            <label for="inputPassword3" class="col-sm-4 col-form-label">
+                                <span id="ctl00_cphBody_lblName">Agency Name:</span></label>
+                            <div class="col-sm-7">
+                                <input name="ctl00$cphBody$txtName" type="text" maxlength="100" id="ctl00_cphBody_txtName" class="form-control txtsmall" autocomplete="off" />
+                            </div>
+                        </div>
+                        <div class="col-sm-6 row p-0 m-0">
+
+                            <label for="inputPassword3" class="col-sm-4 col-form-label">
+                                <span id="ctl00_cphBody_lblUniqueCode">Unique Code:</span></label>
+                            <div class="col-sm-7">
+                                <input name="ctl00$cphBody$txtUniqueCode" type="text" maxlength="50" id="ctl00_cphBody_txtUniqueCode" class="txtsmall form-control" autocomplete="off" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-1">
+                        <div class="col-sm-6 row p-0 m-0">
+                            <label for="inputPassword3" class="col-sm-4 col-form-label">
+                                <span id="ctl00_cphBody_lblAccountNo">Account No:</span></label>
+                            <div class="col-sm-7">
+                                <input name="ctl00$cphBody$txtAccountNo" type="password" maxlength="20" id="ctl00_cphBody_txtAccountNo" class="txtsmall form-control" autocomplete="off" onpaste="return false" />                                
+                            </div>
+                        </div>
+                        <div class="col-sm-6 row p-0 m-0">
+                            <label for="inputPassword3" class="col-sm-4 col-form-label">
+                                <span id="ctl00_cphBody_Label1">NGO Darpan Id :</span></label>
+                            <div class="col-sm-7">
+                                <input name="ctl00$cphBody$txtNGO_DarpanId" type="text" maxlength="20" id="ctl00_cphBody_txtNGO_DarpanId" class="txtsmall form-control" autocomplete="off" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-1">
+                        <div class="col-sm-6 row p-0 m-0">
+                            <label for="inputPassword3" class="col-sm-4 col-form-label"></label>
+                            <div class="col-sm-7">
+                                <input type="submit" name="ctl00$cphBody$btnSearch" value="Search" onclick="return SubmitsEncry();" id="ctl00_cphBody_btnSearch" class="mt-3 btnsearchagency" />
+                                
+                            </div>
+                        </div>
+                        <div class="col-sm-6 row p-0 m-0">
+                            <label for="inputPassword3" class="col-sm-4 col-form-label">
+                                <input type="hidden" name="ctl00$cphBody$hdnEditStatus" id="ctl00_cphBody_hdnEditStatus" />
+                                <input type="hidden" name="ctl00$cphBody$hdnSchemeId" id="ctl00_cphBody_hdnSchemeId" value="0" />
+                                <input type="hidden" name="ctl00$cphBody$hdnFinancialYear" id="ctl00_cphBody_hdnFinancialYear" value="2027" />
+                            </label>
+                            <div class="col-sm-7">
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <div class="card m-5 mt-0">
+        <div id="ctl00_cphBody_AgencyGrid" class="card-body" style="overflow-x:scroll; width:100%; ">
+            <div>
+	<table class="table table-bordered table-striped" cellspacing="0" rules="all" border="1" id="ctl00_cphBody_grdvAgencyDetails" width="100%">
+		<tr>
+			<th class=" up" scope="col"><a href="javascript:__doPostBack(&#39;ctl00$cphBody$grdvAgencyDetails&#39;,&#39;Sort$AgencyName&#39;)">Agency Name</a></th><th scope="col"><a href="javascript:__doPostBack(&#39;ctl00$cphBody$grdvAgencyDetails&#39;,&#39;Sort$AgencyType&#39;)">Agency Type</a></th><th scope="col"><a href="javascript:__doPostBack(&#39;ctl00$cphBody$grdvAgencyDetails&#39;,&#39;Sort$UniqueAgencyCode&#39;)">Unique Code</a></th><th scope="col"><a href="javascript:__doPostBack(&#39;ctl00$cphBody$grdvAgencyDetails&#39;,&#39;Sort$City&#39;)">City</a></th><th scope="col"><a href="javascript:__doPostBack(&#39;ctl00$cphBody$grdvAgencyDetails&#39;,&#39;Sort$StateName&#39;)">State</a></th><th align="center" scope="col"><a href="javascript:__doPostBack(&#39;ctl00$cphBody$grdvAgencyDetails&#39;,&#39;Sort$StatusName&#39;)">Status</a></th><th align="center" scope="col"><a href="javascript:__doPostBack(&#39;ctl00$cphBody$grdvAgencyDetails&#39;,&#39;Sort$Remark&#39;)">Remark</a></th><th scope="col"><a href="javascript:__doPostBack(&#39;ctl00$cphBody$grdvAgencyDetails&#39;,&#39;Sort$CreatedUserType&#39;)">Created By</a></th><th scope="col"><a href="javascript:__doPostBack(&#39;ctl00$cphBody$grdvAgencyDetails&#39;,&#39;Sort$CreatedDate&#39;)">Date</a></th>
+		</tr><tr>
+			<td align="left" valign="top" width="15%">ABHIVYAKTEE-PANAJI</td><td align="left" valign="top" width="10%">Registered Societies (NGOs)</td><td align="left" valign="top" width="8%">xxxxxxxxxxx@gma</td><td align="left" valign="top" width="8%">PANJI</td><td align="left" valign="top" width="8%">GOA</td><td valign="top" width="8%">
+                            <span id="ctl00_cphBody_grdvAgencyDetails_ctl02_lblStaat">Approved </span>
+                        </td><td align="left" valign="top" width="8%">
+                            <span id="ctl00_cphBody_grdvAgencyDetails_ctl02_lblRemark"></span>
+                        </td><td align="left" valign="top" width="8%">Programme Division</td><td align="center" valign="top" width="8%">18/09/2015</td>
+		</tr><tr>
+			<td align="left" valign="top" width="15%">ADARSH YUVA SANGH GAONDONGRI KOTIGAO</td><td align="left" valign="top" width="10%">Registered Societies (NGOs)</td><td align="left" valign="top" width="8%">xxxxxxxx1529</td><td align="left" valign="top" width="8%">Goa</td><td align="left" valign="top" width="8%">GOA</td><td valign="top" width="8%">
+                            <span id="ctl00_cphBody_grdvAgencyDetails_ctl03_lblStaat">Approved </span>
+                        </td><td align="left" valign="top" width="8%">
+                            <span id="ctl00_cphBody_grdvAgencyDetails_ctl03_lblRemark">APPROVE</span>
+                        </td><td align="left" valign="top" width="8%">Programme Division</td><td align="center" valign="top" width="8%">7/12/2022</td>
+		</tr><tr>
+			<td align="left" valign="top" width="15%">Agnel Charities ( Agnel Seva Sangh )</td><td align="left" valign="top" width="10%">Registered Societies (NGOs)</td><td align="left" valign="top" width="8%">xCASS</td><td align="left" valign="top" width="8%">Salcete</td><td align="left" valign="top" width="8%">GOA</td><td valign="top" width="8%">
+                            <span id="ctl00_cphBody_grdvAgencyDetails_ctl04_lblStaat">Approved </span>
+                        </td><td align="left" valign="top" width="8%">
+                            <span id="ctl00_cphBody_grdvAgencyDetails_ctl04_lblRemark"></span>
+                        </td><td align="left" valign="top" width="8%">Agency Data Approver</td><td align="center" valign="top" width="8%">27/03/2010</td>
+		</tr><tr>
+			<td align="left" valign="top" width="15%">AGNEL CHARITIES (AGNEL SEVA SANGH)</td><td align="left" valign="top" width="10%">Registered Societies (NGOs)</td><td align="left" valign="top" width="8%">xxxxxxxAGAO</td><td align="left" valign="top" width="8%">VERNA</td><td align="left" valign="top" width="8%">GOA</td><td valign="top" width="8%">
+                            <span id="ctl00_cphBody_grdvAgencyDetails_ctl05_lblStaat">Pending PD Approval </span>
+                        </td><td align="left" valign="top" width="8%">
+                            <span id="ctl00_cphBody_grdvAgencyDetails_ctl05_lblRemark"></span>
+                        </td><td align="left" valign="top" width="8%">Goi Employee</td><td align="center" valign="top" width="8%">15/01/2013</td>
+		</tr><tr>
+			<td align="left" valign="top" width="15%">All India Womens Conference</td><td align="left" valign="top" width="10%">Registered Societies (NGOs)</td><td align="left" valign="top" width="8%">xxxxxxxx0946</td><td align="left" valign="top" width="8%">Panaji</td><td align="left" valign="top" width="8%">GOA</td><td valign="top" width="8%">
+                            <span id="ctl00_cphBody_grdvAgencyDetails_ctl06_lblStaat">Approved </span>
+                        </td><td align="left" valign="top" width="8%">
+                            <span id="ctl00_cphBody_grdvAgencyDetails_ctl06_lblRemark"></span>
+                        </td><td align="left" valign="top" width="8%">Goi Employee</td><td align="center" valign="top" width="8%">16/10/2018</td>
+		</tr><tr>
+			<td align="left" valign="top" width="15%">All India Womens Conference</td><td align="left" valign="top" width="10%">Registered Societies (NGOs)</td><td align="left" valign="top" width="8%">xxxxxxxx0546</td><td align="left" valign="top" width="8%">Panaji</td><td align="left" valign="top" width="8%">GOA</td><td valign="top" width="8%">
+                            <span id="ctl00_cphBody_grdvAgencyDetails_ctl07_lblStaat">Rejected </span>
+                        </td><td align="left" valign="top" width="8%">
+                            <span id="ctl00_cphBody_grdvAgencyDetails_ctl07_lblRemark">Rejected</span>
+                        </td><td align="left" valign="top" width="8%">Goi Employee</td><td align="center" valign="top" width="8%">16/10/2017</td>
+		</tr><tr>
+			<td align="left" valign="top" width="15%">Aquamarina Research Foundation</td><td align="left" valign="top" width="10%">Registered Societies (NGOs)</td><td align="left" valign="top" width="8%">xxxxxxxx0449</td><td align="left" valign="top" width="8%">Goa</td><td align="left" valign="top" width="8%">GOA</td><td valign="top" width="8%">
+                            <span id="ctl00_cphBody_grdvAgencyDetails_ctl08_lblStaat">Pending PD Approval </span>
+                        </td><td align="left" valign="top" width="8%">
+                            <span id="ctl00_cphBody_grdvAgencyDetails_ctl08_lblRemark"></span>
+                        </td><td align="left" valign="top" width="8%">Goi Employee</td><td align="center" valign="top" width="8%">3/08/2017</td>
+		</tr><tr>
+			<td align="left" valign="top" width="15%">CARITAS - GOA</td><td align="left" valign="top" width="10%">Registered Societies (NGOs)</td><td align="left" valign="top" width="8%">xxxxxxxx0952</td><td align="left" valign="top" width="8%">PANJIM</td><td align="left" valign="top" width="8%">GOA</td><td valign="top" width="8%">
+                            <span id="ctl00_cphBody_grdvAgencyDetails_ctl09_lblStaat">Approved </span>
+                        </td><td align="left" valign="top" width="8%">
+                            <span id="ctl00_cphBody_grdvAgencyDetails_ctl09_lblRemark"></span>
+                        </td><td align="left" valign="top" width="8%">Agency Data Administrator</td><td align="center" valign="top" width="8%">23/10/2018</td>
+		</tr><tr>
+			<td align="left" valign="top" width="15%">CARITAS - MADGAON RAILWAY STATION</td><td align="left" valign="top" width="10%">Registered Societies (NGOs)</td><td align="left" valign="top" width="8%">xxxxxxxx0529</td><td align="left" valign="top" width="8%">GOA</td><td align="left" valign="top" width="8%">GOA</td><td valign="top" width="8%">
+                            <span id="ctl00_cphBody_grdvAgencyDetails_ctl10_lblStaat">Approved </span>
+                        </td><td align="left" valign="top" width="8%">
+                            <span id="ctl00_cphBody_grdvAgencyDetails_ctl10_lblRemark"></span>
+                        </td><td align="left" valign="top" width="8%">Agency Data Administrator</td><td align="center" valign="top" width="8%">16/10/2018</td>
+		</tr><tr>
+			<td align="left" valign="top" width="15%">Caritas Goa</td><td align="left" valign="top" width="10%">Registered Societies (NGOs)</td><td align="left" valign="top" width="8%">xx</td><td align="left" valign="top" width="8%">Panaji</td><td align="left" valign="top" width="8%">GOA</td><td valign="top" width="8%">
+                            <span id="ctl00_cphBody_grdvAgencyDetails_ctl11_lblStaat">Approved </span>
+                        </td><td align="left" valign="top" width="8%">
+                            <span id="ctl00_cphBody_grdvAgencyDetails_ctl11_lblRemark">
+[Approved]
+[Approved]</span>
+                        </td><td align="left" valign="top" width="8%">Agency Data Approver</td><td align="center" valign="top" width="8%">27/03/2010</td>
+		</tr><tr>
+			<td colspan="9"><table>
+				<tr>
+					<td><span>1</span></td><td><a href="javascript:__doPostBack(&#39;ctl00$cphBody$grdvAgencyDetails&#39;,&#39;Page$2&#39;)">2</a></td><td><a href="javascript:__doPostBack(&#39;ctl00$cphBody$grdvAgencyDetails&#39;,&#39;Page$3&#39;)">3</a></td><td><a href="javascript:__doPostBack(&#39;ctl00$cphBody$grdvAgencyDetails&#39;,&#39;Page$4&#39;)">4</a></td><td><a href="javascript:__doPostBack(&#39;ctl00$cphBody$grdvAgencyDetails&#39;,&#39;Page$5&#39;)">5</a></td>
+				</tr>
+			</table></td>
+		</tr>
+	</table>
+</div>
+            <input type="hidden" name="ctl00$cphBody$hdnAgencyTypeId" id="ctl00_cphBody_hdnAgencyTypeId" value="07" />
+            
+        </div>
+    </div>    
+    <div id="ctl00_cphBody_upAgency">
+
+</div>
+    <input type="hidden" name="ctl00$cphBody$hdnPublicKeyData" id="ctl00_cphBody_hdnPublicKeyData" value="MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCkKrpCBGzpT691mYAEu8NOB1R5
+7PicgjWyM2MqkB1X0+8kz0QzgnwZlOMexf1LmfqDZOOkCySvSDLH1ANe+yhaIwrb
+RK2eRCxBMpi3iHuErhgV6JWiQ0d+ZoWfnxTXsumb3uao0r9AGh40H9CWNaZCFO4f
+qe+xt61Becn3St6cRQIDAQAB
+" />
+    <script type="text/javascript" src="js/LoginAndPassword.js" ></script>
+    <script type="text/javascript">
+        function SubmitsEncry() {
+            var inputAccountNo = "ctl00_cphBody_txtAccountNo";
+            var pubkeyData = "ctl00_cphBody_hdnPublicKeyData";
+            SubmitsEncryptValues(inputAccountNo, pubkeyData);
+        }
+    </script>    
+
+                <input type="range" min="10" max="100" id="slider" value="40" style="visibility: hidden;" />
+                
+            </div>
+            <!-- BEGIN FOOTER-->
+            <section class="footertop">
+                <ul>
+                    <li><a href="https://finmin.nic.in/" target="_blank">Min. of Finance </a></li>
+                    <li><a href="https://cga.nic.in/" target="_blank">CGA </a></li>
+                    <li><a href="https://mygov.in/" target="_blank">MyGov.in</a></li>
+                    <li><a href="https://elekha.nic.in/" target="_blank">e-Lekha </a></li>
+                    <li><a href="https://gepg.nic.in/" target="_blank">GePG </a></li>
+                    <li><a href="https://dbtbharat.gov.in/" target="_blank">DBT Mission </a></li>
+                    <li><a href="https://pfmsdashboard.gov.in/" target="_blank">PFMS Dashboard </a></li>
+                    <li><a href="https://prakalp.cga.gov.in/" target="_blank">Prakalp </a></li>
+                    <li><a href="https://bharatkosh.gov.in/" target="_blank">Bharatkosh </a></li>
+                </ul>
+            </section>
+             <footer>
+                <div class="container">
+                    <div class="row  m-0  ">
+                        <div class="col-md-4 col-sm-12 disclaimer">
+                            <h2>Disclaimer</h2>
+                            <p>The Website is intended to provide the information on the Schemes of Union Government to the different stakeholders. The information reflected here is based on data uploaded by the different Central Government Departments and Ministries. While utmost care has been taken to provide accurate and updated information, Office of the Controller General of Accounts does not hold any responsibility on accuracy, completeness, adequacy, validity and reliability of information for any purpose.</p>
+                            <h6><a href="/Sitepages/Terms_Conditions.aspx" class="text-warning">Terms and Conditions</a></h6>
+                            <h6><a href="/SitePages/FAQ.aspx" class="text-warning">FAQ</a></h6>
+                        </div>
+                        <div class="col-md-4 col-sm-12 pl-5">
+                            <div class="foolinks">
+                                <h2>PFMS Policies</h2>
+                                <ul>
+                                    <li><a href="/Sitepages/PFMS_Policies.aspx">Copyright Policy</a></li>
+                                    <li><a href="/Sitepages/PrivacyPolicy.aspx">Privacy Policy</a></li>
+                                    <li><a href="/Sitepages/hyper_linking_policy.aspx">Hyper Linking Policy</a></li>
+                                    <li><a href="/Sitepages/SecurityPolicy.aspx">Security Policy</a></li>
+                                     <li><a href="/Sitepages/DataProtectionPolicy.aspx">Data Protection Policy</a></li>
+                                    <li><a href="/Sitepages/CMAPPolicy.aspx">CMAP Policy</a></li>
+                                    <li><a href="/Sitepages/ContentArchivalPolicy.aspx">Content Archival Policy</a></li>
+                                    <li><a href="/Sitepages/MasterWebsiteMonitoringPolicy.aspx">Website Monitoring Policy</a></li>
+                                    <li><a href="/Sitepages/ContingencyManagementPlan.aspx">Contingency Management Plan</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-sm-12 address">
+                            <h2>Reach Us</h2>
+                            <h4>Public Financial Management System - PFMS</h4>
+                            <p>3rd & 4th Floor, Shivaji Stadium Annexe Connaught Place, Shaheed Bhagat Singh Marg,
+</br>New Delhi – 110001</p>                           
+                            <br />
+                            <h6><a class=" text-warning ml-5 mt-3" href="/Sitepages/Website_Manager.aspx">Website Manager </a></h6>
+                        </div>
+                    </div>
+                </div>
+                <div class="row m-0 copyright">
+                    <div class="container">
+                        <p>
+                            Last Updated :
+                            <span id="ctl00_lblPageUpdateDate">29-02-2024 | </span>
+                            © 2024 PFMS. All Right Reserved
+                        </p>
+                        <p style="color:#272749; font-size:1px;">Image by vecstock on Freepik</p>
+                    </div>
+                </div>
+            </footer> 
+
+        <script type="text/javascript">
+            function OpenLink(url) {
+                var newwind = window.open(url);
+                window.opener = null;
+                newwind = null;
+            }
+        </script>
+        <!-- Start of Code for Font size increament & decrease -->
+
+        <script>
+            var counterplus = 0;
+            var counterminus = 0;
+            var $affectedElements = $("p, h1, h2, h3, h4, h5, h6, nav-item, div"); // Can be extended, ex. $("div, p, span.someClass")
+
+            // Storing the original size in a data attribute so size can be reset
+            $affectedElements.each(function () {
+                var $this = $(this);
+                $this.data("orig-size", $this.css("font-size"));
+            });
+            $("#btn-increase").click(function () {
+                counterminus = 0;
+                counterplus++;
+                if (counterplus <= 3) {
+                    changeFontSize(1);
+                }
+            })
+            $("#btn-decrease").click(function () {
+                counterplus = 0;
+                counterminus++;
+                if (counterminus <= 3) {
+                    changeFontSize(-1);
+                }
+            })
+            $("#btn-orig").click(function () {
+                counterplus = 0;
+                counterminus = 0;
+                $affectedElements.each(function () {
+                    var $this = $(this);
+                    $this.css("font-size", $this.data("orig-size"));
+                });
+            })
+            function changeFontSize(direction) {
+                $affectedElements.each(function () {
+                    var $this = $(this);
+                    $this.css("font-size", parseInt($this.css("font-size")) + direction);
+                });
+            }
+        </script>
+        <!-- End of Code for Font size increament & decrease -->
+
+        <script>
+            var selector = document.querySelectorAll('.navbar-nav a');
+            var url = window.location.href;
+            // console.log('window url', url);
+            console.log('selector', selector);
+            var target = url.split('/');
+            // console.log(target);
+            $(selector).each(function () {
+                if ($(this).attr('href') === ('/SitePages/' + target[target.length - 1])) {
+                    $(selector).removeClass('active');
+                    $(this).removeClass('active').parents('li').children('a').last().addClass('active');
+                }
+            });
+        </script>
+        <!-- END JAVASCRIPTS --> 
+        <!--END FOOTER-->
+
+            <script type="text/javascript" src="/SitePages/js/owl.carousel.min.js"></script>            
+            <script type="text/javascript" src="/SitePages/js/theme_color.js"></script> 
+            <script type="text/javascript" src="/SitePages/js/CommonFunction.js"></script>
+    
+
+<script type="text/javascript">
+//<![CDATA[
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.AutoCompleteBehavior, {"completionSetCount":20,"delimiterCharacters":"","enableCaching":false,"id":"AutoCompleteEx","minimumPrefixLength":1,"serviceMethod":"GetSchemeByNameController","servicePath":"/SitePages/SearchAgency.aspx"}, {"itemSelected":Selected,"shown":ShowOptions}, null, $get("ctl00_cphBody_ucSchemes_txtBxScheme"));
+});
+//]]>
+</script>
+</form>
+</body>
+<!-- END BODY -->
+</html>

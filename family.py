@@ -1,4 +1,5 @@
-"""What this family scrapes: Indian budget data. Active: G02 (state budgets, Open Budgets India), G03 (PFMS public reports, exploring).
+"""What this family scrapes: Indian budget data. Active: G02 (state budgets, Open Budgets India), G03 (PFMS public reports: scheme
+outlays and the agency registry, stage 2).
 Parked: G01 (Union Budget documents).
 
 FAMILY must equal the repo name (s1d-labs/<FAMILY>) and the family the hub owner added on scrape.s1d.me/runners.
@@ -131,8 +132,9 @@ PFMS = {
     "task": "pfms",
     "target": "pfms.gov.in",
     "env": {"SITE": PFMS_SITE},
-    "geo": "IN",
-    "max_workers": 2,
+    "geo": "",                                     # was "IN" (India servers); since 2026-11-01 the hub's Indian proxies
+    "proxy": "IN",
+    "max_workers": 1,
     "unit_label": "item", "record_label": "page",
     # explore/home (done) walked the old pfms.nic.in, which only says it moved; explore/gov walks the new site
     "items": [{"key": "explore/home", "payload": {"kind": "explore", "seeds": ["https://pfms.nic.in/", "https://pfms.nic.in/NewDefaultHome.aspx"],
@@ -142,7 +144,36 @@ PFMS = {
              + PFMS_ROUND2 + PFMS_ROUND3,
 }
 
-PROJECTS = [OBI_STATES, OBI_WAYBACK, PFMS]
+# G03 stage 2: the two public lists stage 1 found, walked page by page (pfms.py `schemes`, `agencies`), from GitHub pool workers
+# through the hub's Indian proxies (one worker per proxy IP; the family borrows at most 4).
+SCHEME_TYPES = {"0": "All", "1": "Centrally Sponsored Scheme", "2": "Central Sector Scheme", "14": "UT", "15": "Other Central Expenditure",
+                "16": "Finance Commission Transfers", "17": "Other Transfers", "18": "Establishment Expenditure"}
+FY_VALUES = [str(y) for y in range(2009, 2028)]   # dropdown value = the year the FY ends: 2009 = 2008-09 ... 2027 = 2026-27
+PFMS_SCHEMES = {
+    "name": f"{FAMILY}-pfms-schemes",
+    "title": "PFMS Scheme Listing: every Union scheme's plan outlay per year, 2008-09 to 2026-27 (pfms.gov.in)",
+    "task": "pfms", "target": "pfms.gov.in", "env": {"SITE": PFMS_SITE}, "geo": "", "proxy": "IN", "max_workers": 2,
+    "unit_label": "year x scheme type", "record_label": "scheme",
+    # type "0" (All) is the year's whole list: older years tag few schemes with a type (2014-15: 6 CSS), and some schemes have
+    # none. Newest years first; 2008-09 is nearly empty on the site.
+    "items": [{"key": f"schemes/{fy}/{t}", "payload": {"kind": "schemes", "fy": fy, "scheme_type": t, "scheme_type_name": name,
+                                                       "expected": 600 if t == "0" else 60}}
+              for fy in reversed(FY_VALUES) for t, name in SCHEME_TYPES.items()],
+}
+AGENCY_STATES = ["1", "2", "3", "4", "5", "36", "6", "33", "9", "10", "11", "12", "13", "14", "34", "15", "16", "38", "19", "17", "18",
+                 "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "37", "7", "30", "31", "35", "32"]   # 36 = Central Agency
+AGENCY_TYPES = ["5/05", "1/01", "2/02", "9/09", "4/04", "3/03", "7/07", "8/08", "10/10", "12/12", "13/13", "14/14", "15/15", "16/16",
+                "17/17", "18/18"]                  # all but 11/11 Individuals: people, personal data (DPDP Act), never queued
+PFMS_AGENCIES = {
+    "name": f"{FAMILY}-pfms-agencies",
+    "title": "PFMS implementing agency registry by state and type, all statuses, without individuals (pfms.gov.in)",
+    "task": "pfms", "target": "pfms.gov.in", "env": {"SITE": PFMS_SITE}, "geo": "", "proxy": "IN", "max_workers": 2,
+    "unit_label": "state x agency type", "record_label": "agency",
+    "items": [{"key": f"agencies/{st}/{t.split('/')[1]}", "payload": {"kind": "agencies", "state": st, "type": t, "expected": 200}}
+              for st in AGENCY_STATES for t in AGENCY_TYPES],
+}
+
+PROJECTS = [OBI_STATES, OBI_WAYBACK, PFMS, PFMS_SCHEMES, PFMS_AGENCIES]
 
 # health checks the hub runs every minute; work for a project holds while its probe fails
 PROBES = [{"name": f"{FAMILY}:obi-source", "url": f"{OBI_SOURCE}/receipts_metadata.js", "expect": "receipts_metadata"}]
