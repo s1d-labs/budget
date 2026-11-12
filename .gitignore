@@ -3,3 +3,6 @@ __pycache__/
 *.pyc
 report*.md
 .scrape-check-*/
+.pytest_cache/
+.venv/
+.DS_Store
