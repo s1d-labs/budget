@@ -289,6 +289,10 @@ LIST_URL, LIST_GRID = f"{SITE}/SitePages/SchemeListing.aspx", "ctl00$cphBody$grd
 AGENCY_URL, AGENCY_GRID = f"{SITE}/SitePages/SearchAgency.aspx", "ctl00$cphBody$grdvAgencyDetails"
 PAGE_GAP_S = 1.0                                   # between grid pages (the site answers a page in < 1 s)
 PAGE_TRIES = 4                                     # posts of one page before the item fails
+NO_RECORDS_WAIT_S = 30.0                           # wait before a "No records" first page is posted again
+WALK_RESTARTS = 5                                  # new searches (jumping back to the failed page) before an item fails
+RESTART_WAIT_S = 60.0                              # wait before such a new search
+PAGE_EST_S = 3.0                                   # time one grid page takes in the pool (2.7 s measured, Nov 2026)
 PAGER_CELL = re.compile(r"^(?:\d+|\.\.\.|<|>|<<|>>|First|Last|)$")
 SCHEME = re.compile(r"^(.*?)\s*\[([A-Za-z0-9]+)\]\s*$")       # codes are digits, UT schemes letters too ([DN34])
 GRANT = re.compile(r"^(\d+)\s*-\s*(.*)$")
@@ -299,6 +303,10 @@ NO_RECORDS = re.compile(r"No records? (?:match|found)", re.I)
 
 class ItemFailed(Exception):
     pass
+
+
+class NotEnoughTime(ItemFailed):
+    """The list is too long for the time this process has left: the item fails at once, and the process takes no more items."""
 
 
 def grid_rows(page, grid):
@@ -314,14 +322,14 @@ def grid_rows(page, grid):
 def page_problem(page, grid, n):
     """Why a page that answered 200 is not page n of the result grid, or None when it is. A grid that is missing, empty without
     the site's "No records" message, or whose pager does not show n as the current page (the site sometimes answers a postback with
-    another page, which would otherwise end the walk early and quietly) is a problem. Pure."""
+    another page, which would otherwise end the walk early and quietly) is a problem. n=None: any page with rows. Pure."""
     tid = grid.replace("$", "_")
     t = next((t for t in tables(SCRIPT.sub(" ", page), max_rows=1000) if t["id"] == tid), None)
     if t is None:
         return "no result grid"
     if not grid_rows(page, grid):
         return None if n == 1 and NO_RECORDS.search(text_of(page)) else "empty grid without the no-records message"
-    if n > 1:
+    if n is not None and n > 1:
         pager = next((r for r in reversed(t["rows"]) if r and all(PAGER_CELL.match(c) for c in r)), [])
         if str(n) not in pager or has_page(page, grid, n):
             return f"the pager does not show page {n} as current"
@@ -331,6 +339,21 @@ def page_problem(page, grid, n):
 def has_page(page, grid, n):
     """True when the page's pager links to page n of `grid`. Pure."""
     return (grid, f"Page${n}") in set(POSTBACK.findall(html.unescape(page)))
+
+
+def linked_pages(page, grid):
+    """Page numbers the pager of `grid` links to, sorted. The pager shows 10 numbers; its "..." links jump to the page before or
+    after them (page 1 links to 2-11, page 21 to 20 and 22-31). Pure."""
+    return sorted({int(a[5:]) for t, a in POSTBACK.findall(html.unescape(page)) if t == grid and re.fullmatch(r"Page\$\d+", a)})
+
+
+def current_page(page, grid):
+    """The page number the pager shows as current (the number without a link), or None when there is no pager. Pure."""
+    tid = grid.replace("$", "_")
+    t = next((t for t in tables(SCRIPT.sub(" ", page), max_rows=1000) if t["id"] == tid), None)
+    pager = next((r for r in reversed(t["rows"]) if r and all(PAGER_CELL.match(c) for c in r)), []) if t else []
+    links = set(linked_pages(page, grid))
+    return next((int(c) for c in pager if c.isdigit() and int(c) not in links), None)
 
 
 def fy_label(value):
@@ -383,39 +406,108 @@ def agency_records(rows, state_id, type_id):
     return out
 
 
+def grid_page(hub, session, prev, step, grid, n, tries=PAGE_TRIES):
+    """Post `step` from the page `prev` until the answer is page n of the result grid (n=None: any page with rows), at most
+    `tries` posts. Returns the response; raises ItemFailed when no post gives page n."""
+    for attempt in range(tries):                   # the site now and then answers a page with an empty grid: post it again
+        if attempt:
+            hub.metric("page_retry")
+        time.sleep(max(PAGE_GAP_S * (1 + 4 * attempt), hub.settings.get("delay_ms", 0) / 1000))
+        action, state = form_state(prev.text)
+        r = post(hub, session, urljoin(prev.url, action or prev.url), step_data(state, step), referer=prev.url,
+                 timeout=step["timeout"])
+        if not isinstance(r, requests.Response):
+            problem = f"http {r}" if r else "connection error or timeout"
+        elif "<title>Error" in r.text[:3000] or "<title>\r\n\tError" in r.text[:3000]:
+            problem = "the site's error page"
+        else:
+            problem = page_problem(r.text, grid, n)
+        if not problem:
+            return r
+    raise ItemFailed(f"page {n}: {problem} ({tries} tries)")
+
+
+def search(hub, session, url, fields, grid, timeout):
+    """GET the form page and search with `fields`: page 1 of the result grid. A "No records" answer is checked once more after
+    NO_RECORDS_WAIT_S: under load the site sometimes answers "No records" for a search that has thousands of rows."""
+    form = fetch(hub, session, url, timeout=60)
+    if not isinstance(form, requests.Response):
+        raise ItemFailed(f"form page: http {form}" if form else "form page: connection error")
+    step = {"fields": fields, "button": "ctl00$cphBody$btnSearch", "timeout": timeout}
+    r = grid_page(hub, session, form, step, grid, 1)
+    if not grid_rows(r.text, grid):
+        hub.metric("no_records_recheck")
+        time.sleep(NO_RECORDS_WAIT_S)
+        r = grid_page(hub, session, form, step, grid, 1)
+    return r
+
+
+def seek(hub, session, r, grid, n):
+    """From result page `r`, follow the pager to page n: each time the farthest page it links to that is not past n (1 -> 11 ->
+    21 -> ... -> n, about n/10 posts). Returns page n; raises ItemFailed when the pager does not lead there."""
+    at = current_page(r.text, grid) or 1
+    while at != n:
+        nxt = max((k for k in linked_pages(r.text, grid) if at < k <= n), default=None)
+        if nxt is None:
+            raise ItemFailed(f"page {n}: the pager of page {at} does not lead there")
+        hub.metric("page_seek")
+        r = grid_page(hub, session, r, {"target": grid, "arg": f"Page${nxt}", "timeout": 120}, grid, nxt)
+        at = nxt
+    return r
+
+
+def check_time(hub, session, first, grid):
+    """Post Page$Last from page 1 to learn the number of pages; raise NotEnoughTime when the walk cannot end before DEADLINE. A
+    grid that refuses Page$Last is walked without the check."""
+    try:
+        last = grid_page(hub, session, first, {"target": grid, "arg": "Page$Last", "timeout": 120}, grid, None, tries=2)
+    except ItemFailed:
+        hub.metric("page_last_failed")
+        return None
+    pages = current_page(last.text, grid)
+    if pages is None:
+        hub.metric("page_last_failed")
+        return None
+    need, left = (pages - 1) * PAGE_EST_S, DEADLINE - time.time()
+    if need > left:
+        raise NotEnoughTime(f"not enough time: {pages} pages need ~{need / 60:.0f} min, {left / 60:.0f} min left")
+    return pages
+
+
 def grid_walk(hub, session, url, fields, grid, first_timeout=240):
-    """GET the page, search with `fields`, then yield (page number, page text) for every page of the result grid. Raises
-    ItemFailed when a page does not load."""
-    r = fetch(hub, session, url, timeout=60)
-    if not isinstance(r, requests.Response):
-        raise ItemFailed(f"form page: http {r}" if r else "form page: connection error")
-    button = "ctl00$cphBody$btnSearch"
-    n, step = 1, {"fields": fields, "button": button, "timeout": first_timeout}
+    """Search with `fields`, then yield (page number, page text) for every page of the result grid, each page posted from the one
+    before. When a page does not load (PAGE_TRIES posts), the walk does not start again from page 1: it makes a new search in a new
+    session and follows the pager back to that page (seek), at most WALK_RESTARTS times. Raises ItemFailed when a page does not load
+    after that, and NotEnoughTime before a walk that cannot end in the time left."""
+    r = search(hub, session, url, fields, grid, first_timeout)
+    yield 1, r.text
+    if not has_page(r.text, grid, 2):
+        return
+    if grid == AGENCY_GRID:                                  # the Scheme Listing answers Page$Last with its error page
+        check_time(hub, session, r, grid)
+    n, restarts = 2, 0
     while True:
-        prev = r
-        for attempt in range(PAGE_TRIES):          # the site now and then answers a page with an empty grid: post it again
-            if attempt:
-                hub.metric("page_retry")
-            time.sleep(max(PAGE_GAP_S * (1 + 4 * attempt), hub.settings.get("delay_ms", 0) / 1000))
-            action, state = form_state(prev.text)
-            r = post(hub, session, urljoin(prev.url, action or prev.url), step_data(state, step), referer=prev.url,
-                     timeout=step["timeout"])
-            if not isinstance(r, requests.Response):
-                problem = f"http {r}" if r else "connection error or timeout"
-            elif "<title>Error" in r.text[:3000] or "<title>\r\n\tError" in r.text[:3000]:
-                problem = "the site's error page"
-            else:
-                problem = page_problem(r.text, grid, n)
-            if not problem:
-                break
-        if problem:
-            raise ItemFailed(f"page {n}: {problem} ({PAGE_TRIES} tries)")
+        try:
+            r = grid_page(hub, session, r, {"target": grid, "arg": f"Page${n}", "timeout": 120}, grid, n)
+        except ItemFailed as e:
+            err, r = e, None
+            while r is None:
+                if restarts >= WALK_RESTARTS:
+                    raise ItemFailed(f"{err}; {restarts} restarts")
+                restarts += 1
+                hub.metric("walk_restart")
+                time.sleep(RESTART_WAIT_S)
+                session = requests.Session()                 # new cookies: the old ASP.NET session may be what went wrong
+                try:
+                    r = seek(hub, session, search(hub, session, url, fields, grid, first_timeout), grid, n)
+                except ItemFailed as e2:
+                    err = e2
         yield n, r.text
         if not has_page(r.text, grid, n + 1):
             return
         if time.time() > DEADLINE:
             raise ItemFailed(f"out of time after page {n}")
-        n, step = n + 1, {"target": grid, "arg": f"Page${n + 1}", "timeout": 120}
+        n += 1
 
 
 def schemes(hub, session, item, store):
@@ -431,9 +523,13 @@ def schemes(hub, session, item, store):
 
 
 def agencies(hub, session, item, store):
-    """One (state, agency type) of the agency registry, all statuses. Type Individuals is never queued (personal data)."""
+    """One (state, agency type) of the agency registry: all statuses, or one when the payload has `status` (the ddlStatus value;
+    shorter walks for the big lists). Type Individuals is never queued (personal data). Record ids do not depend on the status
+    filter, so a re-run split by status replaces the rows of an earlier run over all statuses."""
     p = item["payload"]
     fields = {"ctl00$cphBody$ddlState": p["state"], "ctl00$cphBody$ddlType": p["type"]}
+    if p.get("status"):
+        fields["ctl00$cphBody$ddlStatus"] = p["status"]
     n = 0
     for page_no, page in grid_walk(hub, session, AGENCY_URL, fields, AGENCY_GRID):
         for rid, data in agency_records(grid_rows(page, AGENCY_GRID), p["state"], p["type"]):
@@ -495,10 +591,19 @@ def main():
                 continue
             try:
                 n, bad = kind(hub, session, item, store)
+            except NotEnoughTime as e:
+                # fail it now so that a worker with a full time budget takes it; stop, so that this process does not claim it
+                # again (failed items come back after 3 minutes) and use up its attempts
+                hub.complete([item["key"]], "failed", error=str(e)[:200])
+                break
             except ItemFailed as e:
                 hub.complete([item["key"]], "failed", error=str(e)[:200])
                 continue
-            if n or item["payload"]["kind"] in LISTS:
+            if n == 0 and item["payload"]["kind"] in LISTS and item.get("attempts", 1) > 1:
+                # an earlier attempt of this item got further (or failed), so an empty list now is most likely the site's
+                # "No records" under load: fail, so that the hub retries, instead of marking the item done (report-G03 §4.1)
+                hub.complete([item["key"]], "failed", error=f"empty list on attempt {item['attempts']}")
+            elif n or item["payload"]["kind"] in LISTS:
                 hub.complete([item["key"]], "done", fetched=n)
             else:
                 hub.complete([item["key"]], "failed", error=f"no page loaded ({bad} failed)")

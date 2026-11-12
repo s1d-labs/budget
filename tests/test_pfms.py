@@ -175,6 +175,240 @@ def test_stage2_queues():
     p = {p["name"]: p for p in family.PROJECTS}
     sch, ag = p["budget-pfms-schemes"], p["budget-pfms-agencies"]
     assert sch["proxy"] == ag["proxy"] == "IN" and sch["geo"] == ag["geo"] == ""
-    assert len(sch["items"]) == 19 * 8 and sch["items"][0]["key"] == "schemes/2027/0"
+    assert len(sch["items"]) == 19 * 8 + 1 and sch["items"][0]["key"] == "schemes/2027/0"
     assert all(i["payload"]["type"] != "11/11" for i in ag["items"])        # Individuals: personal data, never queued
-    assert len(ag["items"]) == 37 * 16 and len({i["key"] for i in ag["items"]}) == len(ag["items"])
+    assert len(ag["items"]) == 37 * 16 + 36 and len({i["key"] for i in ag["items"]}) == len(ag["items"])
+    assert len({i["key"] for i in sch["items"]}) == len(sch["items"])
+
+
+def test_rerun_items_copy_the_old_payloads():
+    p = {p["name"]: p for p in family.PROJECTS}
+    ag = {i["key"]: i["payload"] for i in p["budget-pfms-agencies"]["items"]}
+    sch = {i["key"]: i["payload"] for i in p["budget-pfms-schemes"]["items"]}
+    reruns = [k for k in ag if k.endswith("/r2")]
+    assert len(reruns) == 36 and all(ag[k] == ag[k[:-3]] and "status" not in ag[k] for k in reruns)
+    assert ag["agencies/31/04/r2"] == {"kind": "agencies", "state": "31", "type": "4/04", "expected": 200}
+    assert sch["schemes/2015/0/r2"] == sch["schemes/2015/0"]
+
+
+# ---- false "No records" (report-G03 §4.1): 27 agency items were marked done with 0 rows after earlier attempts stored thousands ----
+
+def _walk_first_page(monkeypatch, answers):
+    """Run grid_walk() on the agency form with the site answering the posts with `answers` in turn; return (first page yielded,
+    posts made, hub counters)."""
+    class Resp:
+        def __init__(self, text, url):
+            self.text, self.url, self.status_code, self.content = text, url, 200, text.encode()
+    posts = []
+    answers = list(answers)
+    monkeypatch.setattr(pfms.requests, "Response", Resp)
+    monkeypatch.setattr(pfms.time, "sleep", lambda s: None)
+    monkeypatch.setattr(pfms, "fetch", lambda hub, s, url, timeout=0: Resp(AGENCY, url))
+    monkeypatch.setattr(pfms, "post", lambda hub, s, url, data, referer, timeout=60: posts.append(data) or Resp(answers.pop(0), url))
+    hub = pfms.LocalHub()
+    walk = pfms.grid_walk(hub, None, pfms.AGENCY_URL, {"ctl00$cphBody$ddlState": "10"}, pfms.AGENCY_GRID)
+    n, page = next(walk)
+    assert n == 1
+    return page, posts, hub.counts
+
+
+def test_no_records_first_page_is_posted_again(monkeypatch):
+    page, posts, counts = _walk_first_page(monkeypatch, [EMPTY_AG, AG1])      # "No records" under load, then the real page 1
+    assert page == AG1 and len(posts) == 2 and counts.get("no_records_recheck") == 1
+    assert posts[0] == posts[1] and posts[1]["ctl00$cphBody$btnSearch"] == "Search"   # the same search, from the form page
+
+
+def test_no_records_twice_is_accepted(monkeypatch):
+    page, posts, counts = _walk_first_page(monkeypatch, [EMPTY_AG, EMPTY_AG])
+    assert page == EMPTY_AG and len(posts) == 2 and counts.get("no_records_recheck") == 1
+
+
+def test_normal_first_page_is_not_posted_again(monkeypatch):
+    page, posts, counts = _walk_first_page(monkeypatch, [AG1])
+    assert page == AG1 and len(posts) == 1 and "no_records_recheck" not in counts
+
+
+def test_agency_status_filter_goes_into_the_search(monkeypatch):
+    seen = []
+    monkeypatch.setattr(pfms, "grid_walk", lambda hub, s, url, fields, grid: seen.append(fields) or iter([(1, AG1)]))
+    hub = pfms.LocalHub()
+    hub.record = lambda rid, data: None
+    pfms.agencies(hub, None, {"key": "k", "payload": {"kind": "agencies", "state": "10", "type": "7/07", "status": "43"}}, None)
+    pfms.agencies(hub, None, {"key": "k", "payload": {"kind": "agencies", "state": "10", "type": "7/07"}}, None)
+    assert seen[0]["ctl00$cphBody$ddlStatus"] == "43" and "ctl00$cphBody$ddlStatus" not in seen[1]
+
+
+def _run_main(monkeypatch, attempts, n):
+    """Run main() on one agency item whose walk gives n rows; return the hub's complete() calls."""
+    import sys
+    import types
+    done = []
+
+    class FakeHub:
+        settings = {}
+
+        def __init__(self, *a, **k):
+            self.items = [{"key": "agencies/14/16", "payload": {"kind": "agencies", "state": "14", "type": "16/16"},
+                           "attempts": attempts}]
+
+        def claim(self, *a, **k):
+            return [self.items.pop()] if self.items else []
+
+        def complete(self, keys, status, error=None, fetched=None):
+            done.append((keys[0], status, fetched, error))
+
+        def close(self, *a):
+            pass
+    monkeypatch.setitem(sys.modules, "scrape_hub_client", types.SimpleNamespace(HubClient=FakeHub))
+    monkeypatch.setitem(pfms.KINDS, "agencies", lambda hub, s, item, store: (n, None))
+    pfms.main()
+    return done
+
+
+def test_empty_list_on_a_later_attempt_fails(monkeypatch):
+    assert _run_main(monkeypatch, attempts=1, n=0) == [("agencies/14/16", "done", 0, None)]       # first try: a real empty list
+    key, status, _, error = _run_main(monkeypatch, attempts=3, n=0)[0]
+    assert status == "failed" and "attempt 3" in error                                               # not done with 0 rows
+    assert _run_main(monkeypatch, attempts=3, n=120) == [("agencies/14/16", "done", 120, None)]
+
+
+# ---- long walks: a failed page is reached again through the pager, not by a new walk from page 1; a walk that cannot end in the
+# time left is not started ----
+
+def test_pager_numbers_on_saved_pages():
+    assert pfms.linked_pages(SCH1, pfms.LIST_GRID) == list(range(2, 12))           # 2-10, and "..." -> 11
+    assert pfms.current_page(SCH1, pfms.LIST_GRID) == 1
+    assert pfms.current_page(SCH10, pfms.LIST_GRID) == 10 and 11 in pfms.linked_pages(SCH10, pfms.LIST_GRID)
+    assert pfms.current_page(AG5, pfms.AGENCY_GRID) == 5 and pfms.linked_pages(AG5, pfms.AGENCY_GRID) == [1, 2, 3, 4]
+    assert pfms.current_page(EMPTY_AG, pfms.AGENCY_GRID) is None
+
+
+def fake_grid(n, total, grid=pfms.AGENCY_GRID):
+    """A result page like the site's: page n of `total`, a pager of 10 numbers with "..." links before and after them."""
+    s = (n - 1) // 10 * 10 + 1
+    link = lambda k, label: f"<td><a href=\"javascript:__doPostBack('{grid}','Page${k}')\">{label}</a></td>"
+    cells = ([link(s - 1, "...")] if s > 1 else []) + [f"<td><span>{k}</span></td>" if k == n else link(k, k)
+                                                       for k in range(s, min(s + 9, total) + 1)]
+    cells += [link(s + 10, "...")] if s + 10 <= total else []
+    rows = "".join(f"<tr><td>AGENCY {n}-{i}</td>" + "<td>x</td>" * 8 + "</tr>" for i in range(10))
+    return (f'<html><title>Search Agency</title><form method="post" action="SearchAgency.aspx" id="aspnetForm">'
+            f'<input type="hidden" name="__VIEWSTATE" value="p{n}">'
+            f'<table id="{grid.replace("$", "_")}"><tr><th>Name</th>' + "<th>h</th>" * 8 + f"</tr>{rows}"
+            f'<tr><td><table><tr>{"".join(cells)}</tr></table></td></tr></table></form></html>')
+
+
+class FakeGridSite:
+    """Answers the agency form like pfms.gov.in: a search gives page 1; Page$k gives page k only when the page it was posted from
+    links to it (the real site answers anything else with its error page); Page$Last gives the last page. `fail` = {page: number of
+    posts of that page that get an empty grid}."""
+
+    def __init__(self, monkeypatch, total, fail=None, fail_searches=()):
+        self.total, self.fail, self.posts, self.sessions = total, dict(fail or {}), [], set()
+        self.fail_searches, self.n_search = set(fail_searches), 0          # search posts (1 = the first) that get an empty grid
+
+        class Resp:
+            def __init__(self, text, url):
+                self.text, self.url, self.status_code, self.content = text, url, 200, text.encode()
+        self.Resp = Resp
+        monkeypatch.setattr(pfms.requests, "Response", Resp)
+        monkeypatch.setattr(pfms.requests, "Session", object)
+        monkeypatch.setattr(pfms.time, "sleep", lambda s: None)
+        monkeypatch.setattr(pfms, "fetch", lambda hub, s, url, timeout=0: Resp(AGENCY, url))
+        monkeypatch.setattr(pfms, "post", self.post)
+
+    def post(self, hub, session, url, data, referer, timeout=60):
+        self.sessions.add(id(session))
+        arg, frm = data["__EVENTARGUMENT"], data["__VIEWSTATE"]
+        if not arg:
+            k = 1
+        elif arg == "Page$Last":
+            k = self.total
+        else:
+            k = int(arg[5:])
+            src = int(frm[1:]) if frm.startswith("p") else 0
+            assert k in pfms.linked_pages(fake_grid(src, self.total), pfms.AGENCY_GRID), f"page {k} posted from page {src}"
+        self.posts.append(arg or "search")
+        self.n_search += not arg
+        if not arg and self.n_search in self.fail_searches:
+            return self.Resp(EMPTY_AG.replace("No Records Found", ""), url)
+        if self.fail.get(k):
+            self.fail[k] -= 1
+            return self.Resp(EMPTY_AG.replace("No Records Found", ""), url)
+        return self.Resp(fake_grid(k, self.total), url)
+
+
+def walk(total, monkeypatch, fail=None, deadline=None, fail_searches=()):
+    site = FakeGridSite(monkeypatch, total, fail, fail_searches)
+    monkeypatch.setattr(pfms, "DEADLINE", deadline or pfms.time.time() + 3600)
+    hub = pfms.LocalHub()
+    got = []
+    try:
+        for n, page in pfms.grid_walk(hub, "first session", pfms.AGENCY_URL, {"ctl00$cphBody$ddlState": "1"}, pfms.AGENCY_GRID):
+            assert pfms.current_page(page, pfms.AGENCY_GRID) == n
+            got.append(n)
+        return got, None, site, hub.counts
+    except pfms.ItemFailed as e:
+        return got, e, site, hub.counts
+
+
+def test_walk_goes_through_every_page(monkeypatch):
+    got, err, site, counts = walk(35, monkeypatch)
+    assert err is None and got == list(range(1, 36))
+    assert site.posts[:2] == ["search", "Page$Last"] and "walk_restart" not in counts
+
+
+def test_failed_page_is_reached_again_by_pager_jumps(monkeypatch):
+    got, err, site, counts = walk(35, monkeypatch, fail={27: pfms.PAGE_TRIES})
+    assert err is None and got == list(range(1, 36))                       # every page once, none lost or repeated
+    assert counts["walk_restart"] == 1 and len(site.sessions) == 2           # a new search in a new session ...
+    i = len(site.posts) - 1 - site.posts[::-1].index("search")
+    assert site.posts[i:i + 4] == ["search", "Page$11", "Page$21", "Page$27"]   # ... then 3 jumps, not 26 pages
+
+
+def test_page_that_never_loads_fails_after_the_restarts(monkeypatch):
+    got, err, site, counts = walk(35, monkeypatch, fail={27: 1000})
+    assert got == list(range(1, 27)) and counts["walk_restart"] == pfms.WALK_RESTARTS
+    assert "page 27" in str(err) and f"{pfms.WALK_RESTARTS} restarts" in str(err)
+
+
+def test_restart_survives_a_failed_search(monkeypatch):
+    # page 27 fails; the first new search fails too (search posts 2-5, PAGE_TRIES each); the second new search gets there
+    got, err, site, counts = walk(35, monkeypatch, fail={27: pfms.PAGE_TRIES}, fail_searches=range(2, 2 + pfms.PAGE_TRIES))
+    assert err is None and got == list(range(1, 36)) and counts["walk_restart"] == 2
+
+
+def test_walk_too_long_for_the_time_left_is_not_started(monkeypatch):
+    got, err, site, counts = walk(1500, monkeypatch, deadline=pfms.time.time() + 600)      # ~75 min of pages, 10 min left
+    assert isinstance(err, pfms.NotEnoughTime) and "1500 pages" in str(err) and got == [1]
+    assert site.posts == ["search", "Page$Last"]
+    got, err, site, counts = walk(150, monkeypatch, deadline=pfms.time.time() + 3600)
+    assert err is None and len(got) == 150
+
+
+def test_not_enough_time_stops_the_process(monkeypatch):
+    import sys
+    import types
+    done, claims = [], []
+
+    class FakeHub:
+        settings = {}
+
+        def __init__(self, *a, **k):
+            pass
+
+        def claim(self, *a, **k):
+            claims.append(1)
+            return [{"key": f"agencies/1/{len(claims)}", "payload": {"kind": "agencies"}, "attempts": 1}]
+
+        def complete(self, keys, status, error=None, fetched=None):
+            done.append((keys[0], status, error))
+
+        def close(self, *a):
+            pass
+
+    def too_long(hub, s, item, store):
+        raise pfms.NotEnoughTime("not enough time: 1500 pages")
+    monkeypatch.setitem(sys.modules, "scrape_hub_client", types.SimpleNamespace(HubClient=FakeHub))
+    monkeypatch.setitem(pfms.KINDS, "agencies", too_long)
+    pfms.main()
+    assert done == [("agencies/1/1", "failed", "not enough time: 1500 pages")] and len(claims) == 1

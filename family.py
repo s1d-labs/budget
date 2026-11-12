@@ -172,6 +172,25 @@ PFMS_AGENCIES = {
     "items": [{"key": f"agencies/{st}/{t.split('/')[1]}", "payload": {"kind": "agencies", "state": st, "type": t, "expected": 200}}
               for st in AGENCY_STATES for t in AGENCY_TYPES],
 }
+# G03 re-run (report-G03 §4.1, §10): 27 agency items were marked done with 0 rows (the site answered "No records" under load after
+# earlier attempts had stored rows), and 9 failed after 40 attempts; schemes/2015/0 failed at page 43. seed_queue keeps existing keys,
+# so each one is queued again under a new key "<old key>/r2", same payload, all statuses (a split by ddlStatus misses the statuses
+# the dropdown does not offer, e.g. "Pending Agency Approval"). pfms.py now re-checks a "No records" first page and fails an empty
+# list on a later attempt.
+AGENCY_RERUN = ["14/16", "13/04", "4/13", "34/04", "11/08", "14/04", "16/04", "26/04", "37/04", "35/04", "27/04", "15/13", "12/04",
+                "24/04", "27/13", "32/04", "18/04", "31/03", "11/04", "18/13", "11/03", "31/04", "29/04", "5/03", "33/13", "9/04",
+                "32/13",                                                                 # done with 0 rows
+                "16/13", "12/13", "14/13", "3/04", "34/03", "5/13", "29/13", "33/03", "17/13"]   # failed
+SCHEME_RERUN = ["schemes/2015/0"]
+
+
+def rerun(items, keys):
+    by_key = {i["key"]: i for i in items}
+    return [{"key": f"{k}/r2", "payload": dict(by_key[k]["payload"])} for k in keys]
+
+
+PFMS_AGENCIES["items"] += rerun(PFMS_AGENCIES["items"], [f"agencies/{k}" for k in AGENCY_RERUN])
+PFMS_SCHEMES["items"] += rerun(PFMS_SCHEMES["items"], SCHEME_RERUN)
 
 PROJECTS = [OBI_STATES, OBI_WAYBACK, PFMS, PFMS_SCHEMES, PFMS_AGENCIES]
 
