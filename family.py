@@ -1,6 +1,6 @@
 """What this family scrapes: Indian budget data. Active: G02 (state budgets, Open Budgets India), G03 (PFMS public reports: scheme
 outlays and the agency registry, stage 2).
-Parked: G01 (Union Budget documents).
+G01 (Union Budget documents): the live site is parked (it refuses this scraper); the Wayback Machine's copy runs instead.
 
 FAMILY must equal the repo name (s1d-labs/<FAMILY>) and the family the hub owner added on scrape.s1d.me/runners.
 Each project is one queue of work on one site; `target` is the host it hits (the hub caps workers per target).
@@ -54,6 +54,25 @@ UNION_DOCS = {
              + [item for year in YEARS for item in year_docs(year)],
 }
 UNION_DOCS_PROBE = {"name": f"{FAMILY}:indiabudget.gov.in", "url": f"{SITE}/", "expect": "Union Budget"}
+
+# G01 from the Wayback Machine (union_wayback.py): every document (PDF, Excel, Word, ZIP) archived from indiabudget.gov.in, one item
+# per distinct content of each path (16,163 items, ~9 GB, 1947-48 to 2026-27). The listing is fixed in data/ (union_wayback.py --list).
+# No probe and max_workers 2, as for OBI_WAYBACK: archive.org is a non-profit and rate-limits the hub's shared IP.
+def _union_wayback_items():
+    from union_wayback import item_key, load_listing
+    return [{"key": item_key(r), "payload": {**r, "expected": 1}} for r in load_listing()]
+
+
+UNION_WAYBACK = {
+    "name": f"{FAMILY}-union-wayback",
+    "title": "Union Budget and Economic Survey documents, from the Wayback Machine's copy of indiabudget.gov.in",
+    "task": "union-wayback",
+    "target": "web.archive.org",
+    "env": {},
+    "max_workers": 2,
+    "unit_label": "document", "record_label": "document",
+    "items": _union_wayback_items(),
+}
 
 # G02: Open Budgets India's normalised state indicators, from the copy in CBGA's GitHub repo (openbudgetsindia.org is gone)
 OBI_SOURCE = "https://raw.githubusercontent.com/cbgaindia/story-generator/972ac485e67afe95ec7ab0bf67222cdc27c4f9de/src/data"
@@ -192,7 +211,7 @@ def rerun(items, keys):
 PFMS_AGENCIES["items"] += rerun(PFMS_AGENCIES["items"], [f"agencies/{k}" for k in AGENCY_RERUN])
 PFMS_SCHEMES["items"] += rerun(PFMS_SCHEMES["items"], SCHEME_RERUN)
 
-PROJECTS = [OBI_STATES, OBI_WAYBACK, PFMS, PFMS_SCHEMES, PFMS_AGENCIES]
+PROJECTS = [OBI_STATES, OBI_WAYBACK, PFMS, PFMS_SCHEMES, PFMS_AGENCIES, UNION_WAYBACK]
 
 # health checks the hub runs every minute; work for a project holds while its probe fails
 PROBES = [{"name": f"{FAMILY}:obi-source", "url": f"{OBI_SOURCE}/receipts_metadata.js", "expect": "receipts_metadata"}]

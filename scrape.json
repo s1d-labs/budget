@@ -1,6 +1,6 @@
 {
   "family": "budget",
-  "about": "Indian budgets. G02: state budget data normalised by Open Budgets India (CBGA's repo + the Wayback Machine's copy of its catalogue). G03: PFMS public reports (pfms.gov.in, through the hub's Indian proxies): scheme outlays per year and the implementing agency registry. G01 (Union Budget documents, www.indiabudget.gov.in) is parked.",
+  "about": "Indian budgets. G02: state budget data normalised by Open Budgets India (CBGA's repo + the Wayback Machine's copy of its catalogue). G03: PFMS public reports (pfms.gov.in, through the hub's Indian proxies): scheme outlays per year and the implementing agency registry. G01: Union Budget and Economic Survey documents from the Wayback Machine's copy of www.indiabudget.gov.in (the live site refuses this scraper, so its own project is parked).",
   "setup": [
     "pip install -r requirements.txt"
   ],
@@ -20,6 +20,10 @@
     "pfms": [
       "python",
       "pfms.py"
+    ],
+    "union-wayback": [
+      "python",
+      "union_wayback.py"
     ]
   }
 }
