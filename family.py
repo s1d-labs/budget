@@ -56,7 +56,7 @@ UNION_DOCS = {
 UNION_DOCS_PROBE = {"name": f"{FAMILY}:indiabudget.gov.in", "url": f"{SITE}/", "expect": "Union Budget"}
 
 # G01 from the Wayback Machine (union_wayback.py): every document (PDF, Excel, Word, ZIP) archived from indiabudget.gov.in, one item
-# per distinct content of each path (16,163 items, ~9 GB, 1947-48 to 2026-27). The listing is fixed in data/ (union_wayback.py --list).
+# per distinct content of each path (16,229 items after the re-list of 14 Nov 2026, ~9 GB, 1947-48 to 2026-27). The listing is fixed in data/ (union_wayback.py --list).
 # No probe and max_workers 2, as for OBI_WAYBACK: archive.org is a non-profit and rate-limits the hub's shared IP.
 # Fixes (data/indiabudget-wayback-fixes.json.gz, 14 Nov 2026): 4,712 relabel items (new year rules: Economic Survey under the
 # Budget's year + survey_year; speech names like bs2024_25.pdf), stored again with no request; 2 retries with other captures.
