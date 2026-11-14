@@ -15,14 +15,21 @@ def test_budget_year():
     assert u.budget_year("budget2024-25/doc/eb/sbe1.pdf", "20240801000000") == ("2024-25", False, "path")
     assert u.budget_year("budget2024-25(i)/doc/budget_speech.pdf", "20240202000000") == ("2024-25", True, "path")
     assert u.budget_year("budget2018-2019/doc/eb/allsbe.pdf", "20190101000000") == ("2018-19", False, "path")
-    assert u.budget_year("es98-99/chapt99/chap11.pdf", "20050101000000") == ("1998-99", False, "path")
-    assert u.budget_year("budget_archive/es1974-75 1/ch_1.pdf", "20200101000000") == ("1974-75", False, "path")
+    # Economic Survey: the Budget's year (survey 1998-99 goes with Budget 1999-00), the same as under budget<year>/economicsurvey/
+    assert u.budget_year("es98-99/chapt99/chap11.pdf", "20050101000000") == ("1999-00", False, "path")
+    assert u.budget_year("budget_archive/es1974-75 1/ch_1.pdf", "20200101000000") == ("1975-76", False, "path")
     assert u.budget_year("budget_archive/bspeech/bs199192.pdf", "20200101000000") == ("1991-92", False, "path")
+    assert u.budget_year("doc/bspeech/bs199192(i).pdf", "20200101000000") == ("1991-92", True, "path")
+    assert u.budget_year("doc/bspeech/bs197475(july).pdf", "20200101000000") == ("1974-75", False, "path")
+    assert u.budget_year("doc/bspeech/bs2024_25.pdf", "20250301000000") == ("2024-25", False, "path")
     # current-year paths: the year comes from the capture date (Budget on 1 February; Survey a few days before)
     assert u.budget_year("doc/eb/sbe1.pdf", "20260201120000") == ("2026-27", False, "capture_date")
     assert u.budget_year("doc/eb/sbe1.pdf", "20260131120000") == ("2025-26", False, "capture_date")
     assert u.budget_year("doc/eb/sbe1.pdf", "20160225000000") == ("2016-17", False, "capture_date")   # end of Feb before 2017
-    assert u.budget_year("economicsurvey/doc/echapter.pdf", "20260130000000") == ("2025-26", False, "capture_date")
+    assert u.budget_year("economicsurvey/doc/echapter.pdf", "20260130000000") == ("2026-27", False, "capture_date")
+    lab = u.labels({"path": "budget2025-26/economicsurvey/doc/stat/tab8.8.xlsx", "original": "x", "timestamp": "20250216000000", "digest": "D"})
+    assert (lab["budget_year"], lab["survey_year"]) == ("2025-26", "2024-25")
+    assert u.labels({"path": "doc/eb/sbe1.pdf", "original": "x", "timestamp": "20260202000000", "digest": "D"})["survey_year"] is None
 
 
 def test_listing_rows_dedupes_and_keeps_documents():
@@ -53,8 +60,24 @@ def test_listing_and_queue():
     assert len(rows) > 16000 and all(u.ext_of(r["path"]) in u.DOC_EXT for r in rows)
     items = family.UNION_WAYBACK["items"]
     keys = [i["key"] for i in items]
-    assert len(keys) == len(set(keys)) == len(rows) and max(map(len, keys)) <= 200
+    fixes = u.load_fixes()
+    assert len(keys) == len(set(keys)) == len(rows) + len(fixes) and max(map(len, keys)) <= 200
     assert all(u.budget_year(r["path"], r["timestamp"])[0] for r in rows)           # every document gets a year
     assert "budget2024-25/doc/eb/sbe1.pdf" in {r["path"] for r in rows}
     p = next(p for p in family.PROJECTS if p["name"] == "budget-union-wayback")
     assert p["task"] == "union-wayback" and "probe" not in p and p["max_workers"] == 2
+
+
+def test_relabel_and_alternates_without_hub():
+    """A relabel item stores the new labels with the known download fields and makes no request; fix keys are new keys."""
+    from crawl import LocalHub
+    fixes = u.load_fixes()
+    rel = next(f for f in fixes if "known" in f["payload"])
+    stored = []
+    status, err, n = u.work(LocalHub(), None, None, rel["payload"], lambda rid, d, up: stored.append((rid, d, up)))
+    assert (status, n) == ("done", 1) and stored[0][2] is None
+    rid, d = stored[0][:2]
+    assert rid == u.item_key(rel["payload"]) and d["sha256"] == rel["payload"]["known"]["sha256"]
+    listing_keys = {u.item_key(r) for r in u.load_listing()}
+    assert not listing_keys & {f["key"] for f in fixes}
+    assert sum("alternates" in f["payload"] for f in fixes) == 2

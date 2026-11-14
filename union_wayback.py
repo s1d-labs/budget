@@ -29,6 +29,7 @@ from wayback import CDX, WAYBACK, Pacer, parse_cdx
 PROJECT = os.environ.get("SCRAPE_POOL_PROJECT", "")
 DEADLINE = time.time() + float(os.environ.get("SCRAPE_MAX_HOURS", "1")) * 3600 - 300
 LISTING = Path(__file__).parent / "data" / "indiabudget-wayback.json.gz"
+FIXES = Path(__file__).parent / "data" / "indiabudget-wayback-fixes.json.gz"   # extra queue items: relabels and retries (r2)
 DOC_EXT = ("pdf", "xlsx", "xls", "csv", "zip", "docx", "doc")
 MAGIC = {"pdf": (b"%PDF-",), "xlsx": (b"PK\x03\x04",), "docx": (b"PK\x03\x04",), "zip": (b"PK\x03\x04",),
          "xls": (b"\xd0\xcf\x11\xe0", b"PK\x03\x04"), "doc": (b"\xd0\xcf\x11\xe0", b"PK\x03\x04")}
@@ -37,7 +38,7 @@ CONTENT_TYPE = {"pdf": "application/pdf", "xlsx": "application/vnd.openxmlformat
                 "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"}
 HOST = re.compile(r"^https?://(?:www\.)?indiabudget\.gov\.in(?::\d+)?/", re.I)
 FOLDER_YEAR = re.compile(r"^(?:budget|ub|es)(\d{2}|\d{4})-(\d{2}|\d{4})(\(i\))?(?:$|[ _-])")   # budget2024-25(i), es1974-75 1
-SPEECH_YEAR = re.compile(r"^bs((?:19|20)\d{2})\d{2}\.")                                    # bspeech/bs194748.pdf
+SPEECH_YEAR = re.compile(r"^bs((?:19|20)\d{2})[_-]?\d{2}(\(i\))?")             # bs194748.pdf, bs2024_25.pdf, bs199192(i).pdf
 
 
 def norm_path(original):
@@ -56,24 +57,42 @@ def fy(start):
     return f"{start}-{(start + 1) % 100:02d}"
 
 
+def is_survey(path):
+    """True for Economic Survey files: an `economicsurvey` folder, or an `es<year>` folder. Pure."""
+    return any(p == "economicsurvey" or (FOLDER_YEAR.match(p) and p.startswith("es")) for p in path.split("/")[:-1])
+
+
 def budget_year(path, timestamp):
-    """(year, interim, source) for one document. Year folders (budget2024-25, budget2024-25(i), ub2010-11, es2003-04) name the year.
-    Paths without one (doc/, economicsurvey/) hold the current year's documents, so the year comes from the capture date:
-    the Budget is presented on 1 February (end of February before 2017), the Economic Survey a day or two before it.
-    `source` says which: 'path' or 'capture_date' (an estimate; check against the document). Pure."""
+    """(year, interim, source) for one document. `year` is always the Budget's year. The Economic Survey of 2024-25 is presented
+    with the Budget 2025-26, and the site keeps it under budget2025-26/economicsurvey/, so it gets 2025-26 (`survey_year` names the
+    survey's own year). Year folders (budget2024-25, budget2024-25(i), ub2010-11, es2003-04 = survey 2003-04) and speech file names
+    (bs194748.pdf, bs2024_25.pdf) give the year. Paths without one (doc/, economicsurvey/) hold the current year's documents, so the
+    year comes from the capture date: the Budget is presented on 1 February (end of February before 2017), the Survey a few days
+    before it. `source` says which: 'path' or 'capture_date' (an estimate; check against the document). Pure."""
     for part in path.split("/")[:-1]:
         if m := FOLDER_YEAR.match(part):
             a = int(m[1]) if len(m[1]) == 4 else (1900 + int(m[1]) if int(m[1]) > 50 else 2000 + int(m[1]))
-            return fy(a), bool(m[3]), "path"
+            return fy(a + 1 if part.startswith("es") else a), bool(m[3]), "path"
     if m := SPEECH_YEAR.match(path.rsplit("/", 1)[-1]):
-        return fy(int(m[1])), False, "path"
+        return fy(int(m[1])), bool(m[2]), "path"
     if path.startswith("budget_archive/"):
         return None, False, None
     t = datetime.strptime(timestamp[:8], "%Y%m%d")
-    survey = path.startswith("economicsurvey/")
-    cut = (1, 25) if survey else ((2, 1) if t.year >= 2017 else (2, 20))
+    cut = (1, 25) if is_survey(path) else ((2, 1) if t.year >= 2017 else (2, 20))
     start = t.year if (t.month, t.day) >= cut else t.year - 1
-    return (fy(start - 1) if survey else fy(start)), False, "capture_date"
+    return fy(start), False, "capture_date"
+
+
+def labels(row):
+    """The fields of a record that come from the path and the capture alone (no download). Pure."""
+    path = row["path"]
+    year, interim, source = budget_year(path, row["timestamp"])
+    survey = is_survey(path)
+    return {"path": path, "section": path.split("/")[0] if "/" in path else "", "name": path.rsplit("/", 1)[-1],
+            "format": ext_of(path), "budget_year": year, "interim": interim, "year_source": source,
+            "survey_year": fy(int(year[:4]) - 1) if survey and year else None,
+            "original": row["original"], "captured": row["timestamp"], "digest": row["digest"],
+            "wayback_url": WAYBACK.format(ts=row["timestamp"], url=row["original"])}
 
 
 def listing_rows(captures):
@@ -101,20 +120,24 @@ def sniff(body, ext):
 
 def describe(row, body):
     """(record_id, data) for one archived document. Pure."""
-    path, ext = row["path"], ext_of(row["path"])
-    year, interim, source = budget_year(path, row["timestamp"])
-    return item_key(row), {
-        "path": path, "section": path.split("/")[0] if "/" in path else "", "name": path.rsplit("/", 1)[-1], "format": ext,
-        "budget_year": year, "interim": interim, "year_source": source,
-        "original": row["original"], "captured": row["timestamp"], "digest": row["digest"],
-        "wayback_url": WAYBACK.format(ts=row["timestamp"], url=row["original"]),
-        "bytes": len(body), "sha256": hashlib.sha256(body).hexdigest(), "valid": sniff(body, ext)}
+    return item_key(row), {**labels(row), "bytes": len(body), "sha256": hashlib.sha256(body).hexdigest(),
+                           "valid": sniff(body, ext_of(row["path"]))}
 
 
 def work(hub, session, pace, row, store):
-    """Fetch and store one document. Returns (status, error, records stored)."""
-    pace.wait()
-    r = fetch(hub, session, WAYBACK.format(ts=row["timestamp"], url=row["original"]), timeout=(20, 600))
+    """Fetch and store one document. Returns (status, error, records stored).
+    `row["known"]` (relabel items): the record's download fields are known (bytes, sha256, valid, file), so only the labels are
+    stored again, with no request. `row["alternates"]`: other capture times of the same content, tried in turn when one fails."""
+    if "known" in row:
+        store(item_key(row), {**labels(row), **row["known"]}, None)
+        return "done", None, 1
+    r = None
+    for ts in [row["timestamp"]] + row.get("alternates", []):
+        pace.wait()
+        r = fetch(hub, session, WAYBACK.format(ts=ts, url=row["original"]), timeout=(20, 600))
+        if isinstance(r, requests.Response):
+            row = {**row, "timestamp": ts}
+            break
     if r == 404:                                                  # capture gone from the archive: nothing to retry
         hub.failure("wayback-missing", item_key(row), "404", url=row["original"])
         return "done", None, 0
@@ -142,11 +165,15 @@ def list_archive(out=LISTING):
             pace.wait()
             r = fetch(hub, session, f"{CDX}?{urlencode({**q, **({'resumeKey': resume} if resume else {})}, doseq=True)}", timeout=300)
             if isinstance(r, requests.Response):
-                break
+                try:
+                    rows, next_resume = parse_cdx(r.text)
+                    break
+                except ValueError:                                # the CDX API sometimes cuts a page short
+                    r = "cut-off JSON"
             time.sleep(30 * (attempt + 1))
         else:
             sys.exit(f"cdx failed: {r}")
-        rows, resume = parse_cdx(r.text)
+        resume = next_resume
         captures += rows
         print(f"{len(captures)} captures", file=sys.stderr)
         if not resume:
@@ -159,6 +186,11 @@ def list_archive(out=LISTING):
 
 def load_listing(path=LISTING):
     return json.loads(gzip.decompress(path.read_bytes()))
+
+
+def load_fixes(path=FIXES):
+    """[{"key", "payload"}]: relabel items (payload has `known`) and retries with other captures (payload has `alternates`)."""
+    return json.loads(gzip.decompress(path.read_bytes())) if path.exists() else []
 
 
 def local(timestamp, original):
